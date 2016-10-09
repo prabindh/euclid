@@ -82,7 +82,7 @@ class Euclid():
         self.STATE['x'], self.STATE['y'] = 0, 0
 
         #colors
-        self.redColor = self.blueColor = self.greenColor = 0
+        self.redColor = self.blueColor = self.greenColor = 128
         
         # reference to bbox
         self.bboxIdList = []
