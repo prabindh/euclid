@@ -7,6 +7,7 @@
 # Python 2.7
 # pip install pillow
 # pip install image
+#
 #-------------------------------------------------------------------------------
 
 
@@ -45,7 +46,7 @@ import glob
 import random
 
 # Object Classes (No spaces in name)
-CLASSES = ['Class0', 'Class1', 'Class2']
+CLASSES = ['Class0', 'Class1', 'Class2', 'Class3', 'Class4', 'Class5', 'Class6', 'Class7']
 
 class Euclid():
 
@@ -56,7 +57,18 @@ class Euclid():
         self.currClassLabel=1;
     def setClass2(self):
         self.currClassLabel=2;
+    def setClass3(self):
+        self.currClassLabel=3;
+    def setClass4(self):
+        self.currClassLabel=4;
+    def setClass5(self):
+        self.currClassLabel=5;
+    def setClass6(self):
+        self.currClassLabel=6;
+    def setClass7(self):
+        self.currClassLabel=7;
 
+        
     def __init__(self, master):
         # set up the main frame
         self.parent = master
@@ -106,10 +118,10 @@ class Euclid():
 
 	    #Class labels selection
         count = 0
-        CLASSHANDLERS = [self.setClass0, self.setClass1, self.setClass2]
+        CLASSHANDLERS = [self.setClass0, self.setClass1, self.setClass2, self.setClass3, self.setClass4, self.setClass5, self.setClass6, self.setClass7]
         for classLabel in CLASSES:
             classBtn = Button(self.frame, text = classLabel, command = CLASSHANDLERS[count])
-            classBtn.grid(row = count, column = 3, sticky = W+E)
+            classBtn.grid(row = count, column = 3, sticky = N)
             count = count + 1
 
 
