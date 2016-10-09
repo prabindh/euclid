@@ -73,6 +73,7 @@ class Euclid():
         self.total = 0
         self.imagename = ''
         self.labelfilename = ''
+        self.currLabelMode = 'KITTI' # Other modes TODO
         self.imagefilename = ''
         self.tkimg = None
 
@@ -218,6 +219,7 @@ class Euclid():
                     tmp = [elements.strip() for elements in line.split()]
                     bbTuple = (int(tmp[4]),int(tmp[5]), int(tmp[6]),int(tmp[7]) )
                     self.bboxList.append( bbTuple  )
+                    self.classLabelList.append(CLASSES.index(tmp[0]))
                     #color set
                     currColor = '#%02x%02x%02x' % (self.redColor, self.greenColor, self.blueColor)
                     self.greenColor = (self.greenColor + 25) % 255
@@ -233,17 +235,20 @@ class Euclid():
     def saveLabel(self):
         if self.labelfilename == '':
             return
-        with open(self.labelfilename, 'w') as f:
-            labelCnt=0
-            ##class1 0 0 0 x1,y1,x2,y2 0,0,0 0,0,0 0 0  
-            # fields ignored by DetectNet: alpha, scenario, roty, occlusion, dimensions, location.
-            for bbox in self.bboxList:
-                f.write('%s  ' %CLASSES[self.classLabelList[labelCnt]])               
-                f.write(' 0.0 0 0.0 ')
-                f.write(str(bbox[0])+' '+str(bbox[1])+' '+str(bbox[2])+' '+str(bbox[3]))
-                f.write(' 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 ')
-                f.write('\n')
-                labelCnt = labelCnt+1
+        if self.currLabelMode == 'KITTI':
+            with open(self.labelfilename, 'w') as f:
+                labelCnt=0
+                ##class1 0 0 0 x1,y1,x2,y2 0,0,0 0,0,0 0 0  
+                # fields ignored by DetectNet: alpha, scenario, roty, occlusion, dimensions, location.
+                for bbox in self.bboxList:
+                    f.write('%s  ' %CLASSES[self.classLabelList[labelCnt]])               
+                    f.write(' 0.0 0 0.0 ')
+                    f.write(str(bbox[0])+' '+str(bbox[1])+' '+str(bbox[2])+' '+str(bbox[3]))
+                    f.write(' 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 ')
+                    f.write('\n')
+                    labelCnt = labelCnt+1
+        else:
+            print 'Unknown Label format'
         print 'Image No. %d saved' %(self.cur)
 
 
