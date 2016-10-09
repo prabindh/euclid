@@ -36,7 +36,6 @@
 #                     detection, needed for p/r curves, higher is better.
 #-------------------------------------------------------------------------------
 
-from __future__ import division
 from Tkinter import *
 import tkMessageBox
 import tkFileDialog
@@ -69,12 +68,9 @@ class Euclid():
         # initialize global state
         self.imageDir = ''
         self.imageList= []
-        self.egDir = ''
-        self.egList = []
         self.outDir = ''
         self.cur = 0
         self.total = 0
-        self.category = 0
         self.imagename = ''
         self.labelfilename = ''
         self.imagefilename = ''
