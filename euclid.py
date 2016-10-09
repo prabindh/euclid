@@ -39,6 +39,7 @@
 from __future__ import division
 from Tkinter import *
 import tkMessageBox
+import tkFileDialog
 from PIL import Image, ImageTk
 import os
 import glob
@@ -76,6 +77,7 @@ class Euclid():
         self.category = 0
         self.imagename = ''
         self.labelfilename = ''
+        self.imagefilename = ''
         self.tkimg = None
 
         # initialize mouse state
@@ -97,8 +99,9 @@ class Euclid():
 
         # ----------------- GUI stuff ---------------------
         # dir entry & load
-        self.label = Label(self.frame, text = "Image Dir:")
-        self.label.grid(row = 0, column = 0, sticky = E)
+        self.browserBtn = Button(self.frame, text = "Select Dir", command = self.askDirectory)
+        self.browserBtn.grid(row = 0, column = 0, sticky = W+E)        
+        
         self.entry = Entry(self.frame)
         self.entry.grid(row = 0, column = 1, sticky = W+E)
         self.ldBtn = Button(self.frame, text = "Load", command = self.loadDir)
@@ -114,7 +117,7 @@ class Euclid():
 
 
         # main panel for labeling
-        self.mainPanel = Canvas(self.frame, cursor='tcross')
+        self.mainPanel = Canvas(self.frame, cursor='tcross', borderwidth=2, background='white')
         self.mainPanel.bind("<Button-1>", self.mouseClick)
         self.mainPanel.bind("<Motion>", self.mouseMove)
         self.parent.bind("<Escape>", self.cancelBBox)  # press <Escape> to cancel current bbox
@@ -160,6 +163,10 @@ class Euclid():
         self.frame.columnconfigure(1, weight = 1)
         self.frame.rowconfigure(4, weight = 1)
 
+    def askDirectory(self):
+      self.imageDir = tkFileDialog.askdirectory()
+      self.entry.insert(0, self.imageDir)
+        
     def loadDir(self, dbg = False):
         self.imageDir = self.entry.get()
         self.parent.focus()
@@ -195,6 +202,7 @@ class Euclid():
     def loadImageAndLabels(self):
         # load image
         imagepath = self.imageList[self.cur - 1]
+        self.imagefilename = imagepath
         self.img = Image.open(imagepath)
         self.tkimg = ImageTk.PhotoImage(self.img)
         self.mainPanel.config(width = max(self.tkimg.width(), 400), height = max(self.tkimg.height(), 400))
@@ -227,6 +235,8 @@ class Euclid():
                     self.listbox.itemconfig(len(self.bboxIdList) - 1, fg = currColor)
 
     def saveLabel(self):
+        if self.labelfilename == '':
+            return
         with open(self.labelfilename, 'w') as f:
             labelCnt=0
             ##class1 0 0 0 x1,y1,x2,y2 0,0,0 0,0,0 0 0  
@@ -242,6 +252,8 @@ class Euclid():
 
 
     def mouseClick(self, event):
+        if self.imagefilename == '':
+            return
         if self.STATE['click'] == 0:
             self.STATE['x'], self.STATE['y'] = event.x, event.y
         else:
@@ -261,6 +273,8 @@ class Euclid():
         self.STATE['click'] = 1 - self.STATE['click']
 
     def mouseMove(self, event):
+        if self.imagefilename == '':
+            return
         self.disp.config(text = 'x: %d, y: %d' %(event.x, event.y))
         if self.tkimg:
             if self.hl:
