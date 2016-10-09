@@ -1,11 +1,42 @@
 #-------------------------------------------------------------------------------
 # Euclid - Labelling tool
 # Create and label bounding boxes
-# prabindh@yahoo.com
-#  Initial code taken from github.com/puzzledqs/BBox-Label-Tool
-# Modified to add more image types, image folders, labelling saves, and format
-#
+#    prabindh@yahoo.com
+#        Initial code taken from github.com/puzzledqs/BBox-Label-Tool
+#        Modified to add more image types, image folders, labelling saves, and format
+# Python 2.7
+# pip install pillow
+# pip install image
 #-------------------------------------------------------------------------------
+
+
+#-------------------------------------------------------------------------------
+# The DetectNet/ Kitti Database format
+# Taken from https://github.com/NVIDIA/DIGITS/blob/master/digits/extensions/data/objectDetection/README.md#label-format
+# All values (numerical or strings) are separated via spaces,
+# each row corresponds to one object. The 15 columns represent:
+#
+#Values    Name      Description
+#----------------------------------------------------------------------------
+#   1    type         Describes the type of object: 'Car', 'Van', 'Truck',
+#                     'Pedestrian', 'Person_sitting', 'Cyclist', 'Tram',
+#                     'Misc' or 'DontCare'
+#   1    truncated    Float from 0 (non-truncated) to 1 (truncated), where
+#                     truncated refers to the object leaving image boundaries
+#   1    occluded     Integer (0,1,2,3) indicating occlusion state:
+#                     0 = fully visible, 1 = partly occluded
+#                     2 = largely occluded, 3 = unknown
+#   1    alpha        Observation angle of object, ranging [-pi..pi]
+#   4    bbox         2D bounding box of object in the image (0-based index):
+#                     contains left, top, right, bottom pixel coordinates
+#   3    dimensions   3D object dimensions: height, width, length (in meters)
+#   3    location     3D object location x,y,z in camera coordinates (in meters)
+#   1    rotation_y   Rotation ry around Y-axis in camera coordinates [-pi..pi]
+#   1    score        Only for results: Float, indicating confidence in
+#                     detection, needed for p/r curves, higher is better.
+#-------------------------------------------------------------------------------
+                     
+
 from __future__ import division
 from Tkinter import *
 import tkMessageBox
@@ -18,8 +49,19 @@ import random
 COLORS = ['red', 'blue', 'yellow', 'pink', 'cyan', 'green', 'black']
 # image sizes for the examples
 SIZE = 256, 256
+# Classes
+CLASSES = ['Class 1', 'Class 2', 'Class 3']
 
 class Euclid():
+
+    #set class label 
+    def setClass1(self):
+        self.currClassLabel=1;
+    def setClass2(self):
+        self.currClassLabel=2;
+    def setClass3(self):
+        self.currClassLabel=3;
+
     def __init__(self, master):
         # set up the main frame
         self.parent = master
@@ -50,7 +92,7 @@ class Euclid():
         self.bboxIdList = []
         self.bboxId = None
         self.bboxList = []
-	self.currClassLabel = 1
+        self.currClassLabel = 1
         self.classLabelList = []
         self.hl = None
         self.vl = None
@@ -64,13 +106,13 @@ class Euclid():
         self.ldBtn = Button(self.frame, text = "Load", command = self.loadDir)
         self.ldBtn.grid(row = 0, column = 2, sticky = W+E)
 
-	#Class labels selection
-        self.classBtn1 = Button(self.frame, text = "Class 1", command = self.setClass1)
-        self.classBtn1.grid(row = 0, column = 3, sticky = W+E)
-        self.classBtn2 = Button(self.frame, text = "Class 2", command = self.setClass2)
-        self.classBtn2.grid(row = 1, column = 3, sticky = W+E)
-        self.classBtn3 = Button(self.frame, text = "Class 3", command = self.setClass3)
-        self.classBtn3.grid(row = 2, column = 3, sticky = W+E)
+	    #Class labels selection
+        count = 0
+        CLASSHANDLERS = [self.setClass1, self.setClass2, self.setClass3]
+        for classLabel in CLASSES:
+            classBtn = Button(self.frame, text = classLabel, command = CLASSHANDLERS[count])
+            classBtn.grid(row = count, column = 3, sticky = W+E)
+            count = count + 1
 
 
         # main panel for labeling
@@ -120,21 +162,8 @@ class Euclid():
         self.frame.columnconfigure(1, weight = 1)
         self.frame.rowconfigure(4, weight = 1)
 
-
-
         self.currClassLabel=1
 
-        # for debugging
-##        self.setImage()
-##        self.loadDir()
-
-    #set class label 
-    def setClass1(self):
-        self.currClassLabel=1;
-    def setClass2(self):
-        self.currClassLabel=2;
-    def setClass3(self):
-        self.currClassLabel=3;
 
     def loadDir(self, dbg = False):
         self.imageDir = self.entry.get()
@@ -148,6 +177,7 @@ class Euclid():
 	for files in imageFileTypes:
 	    self.imageList.extend(glob.glob(os.path.join(self.imageDir, files.lower())) )
         if len(self.imageList) == 0:
+            tkMessageBox.showerror("Info", message = "No images (png, jpeg, jpg) found in folder!")
             print 'No image files found in the specified dir!'
             return
         # Change title
@@ -201,7 +231,6 @@ class Euclid():
 
     def saveLabel(self):
         with open(self.labelfilename, 'w') as f:
-            f.write('%d\n' %len(self.bboxList))
             labelCnt=0
             for bbox in self.bboxList:
                 f.write('%d  ' %self.classLabelList[labelCnt])
