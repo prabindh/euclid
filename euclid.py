@@ -44,11 +44,7 @@ import os
 import glob
 import random
 
-# colors for the bboxes
-COLORS = ['red', 'blue', 'yellow', 'pink', 'cyan', 'green', 'black']
-# image sizes for the examples
-SIZE = 256, 256
-# Classes (No spaces in name)
+# Object Classes (No spaces in name)
 CLASSES = ['Class0', 'Class1', 'Class2']
 
 class Euclid():
@@ -87,6 +83,9 @@ class Euclid():
         self.STATE['click'] = 0
         self.STATE['x'], self.STATE['y'] = 0, 0
 
+        #colors
+        self.redColor = self.blueColor = self.greenColor = 0
+        
         # reference to bbox
         self.bboxIdList = []
         self.bboxId = None
@@ -215,15 +214,17 @@ class Euclid():
                     tmp = [elements.strip() for elements in line.split()]
                     bbTuple = (int(tmp[4]),int(tmp[5]), int(tmp[6]),int(tmp[7]) )
                     self.bboxList.append( bbTuple  )
+                    #color set
+                    currColor = '#%02x%02x%02x' % (self.redColor, self.greenColor, self.blueColor)
+                    self.greenColor = (self.greenColor + 25) % 255
                     tmpId = self.mainPanel.create_rectangle(int(tmp[4]), int(tmp[5]), \
                                                             int(tmp[6]), int(tmp[7]), \
                                                             width = 2, \
-                                                            outline = COLORS[(len(self.bboxList)-1) % len(COLORS)])
+                                                            outline = currColor)
                     self.bboxIdList.append(tmpId)
-                    print elements[0]
                     self.listbox.insert(END, '(%d, %d) -> (%d, %d) [%s]' %(int(tmp[4]), int(tmp[5]),  \
                                                         int(tmp[6]), int(tmp[7]), tmp[0]))
-                    self.listbox.itemconfig(len(self.bboxIdList) - 1, fg = COLORS[(len(self.bboxIdList) - 1) % len(COLORS)])
+                    self.listbox.itemconfig(len(self.bboxIdList) - 1, fg = currColor)
 
     def saveLabel(self):
         with open(self.labelfilename, 'w') as f:
@@ -253,7 +254,10 @@ class Euclid():
             print self.classLabelList
             self.bboxId = None
             self.listbox.insert(END, '(%d, %d) -> (%d, %d)[Class %d]' %(x1, y1, x2, y2 , self.currClassLabel))
-            self.listbox.itemconfig(len(self.bboxIdList) - 1, fg = COLORS[(len(self.bboxIdList) - 1) % len(COLORS)])
+            #color set
+            currColor = '#%02x%02x%02x' % (self.redColor, self.greenColor, self.blueColor)
+            self.redColor = (self.redColor + 25) % 255         
+            self.listbox.itemconfig(len(self.bboxIdList) - 1, fg = currColor)
         self.STATE['click'] = 1 - self.STATE['click']
 
     def mouseMove(self, event):
@@ -268,10 +272,13 @@ class Euclid():
         if 1 == self.STATE['click']:
             if self.bboxId:
                 self.mainPanel.delete(self.bboxId)
+            #color set
+            currColor = '#%02x%02x%02x' % (self.redColor, self.greenColor, self.blueColor)
+            self.blueColor = (self.blueColor + 25) % 255                
             self.bboxId = self.mainPanel.create_rectangle(self.STATE['x'], self.STATE['y'], \
                                                             event.x, event.y, \
                                                             width = 2, \
-                                                            outline = COLORS[len(self.bboxList) % len(COLORS)])
+                                                            outline = currColor)
 
     def cancelBBox(self, event):
         if 1 == self.STATE['click']:
