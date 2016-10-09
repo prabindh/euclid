@@ -35,7 +35,6 @@
 #   1    score        Only for results: Float, indicating confidence in
 #                     detection, needed for p/r curves, higher is better.
 #-------------------------------------------------------------------------------
-                     
 
 from __future__ import division
 from Tkinter import *
@@ -49,18 +48,18 @@ import random
 COLORS = ['red', 'blue', 'yellow', 'pink', 'cyan', 'green', 'black']
 # image sizes for the examples
 SIZE = 256, 256
-# Classes
-CLASSES = ['Class 1', 'Class 2', 'Class 3']
+# Classes (No spaces in name)
+CLASSES = ['Class0', 'Class1', 'Class2']
 
 class Euclid():
 
     #set class label 
+    def setClass0(self):
+        self.currClassLabel=0;
     def setClass1(self):
         self.currClassLabel=1;
     def setClass2(self):
         self.currClassLabel=2;
-    def setClass3(self):
-        self.currClassLabel=3;
 
     def __init__(self, master):
         # set up the main frame
@@ -92,7 +91,7 @@ class Euclid():
         self.bboxIdList = []
         self.bboxId = None
         self.bboxList = []
-        self.currClassLabel = 1
+        self.currClassLabel = 0
         self.classLabelList = []
         self.hl = None
         self.vl = None
@@ -108,7 +107,7 @@ class Euclid():
 
 	    #Class labels selection
         count = 0
-        CLASSHANDLERS = [self.setClass1, self.setClass2, self.setClass3]
+        CLASSHANDLERS = [self.setClass0, self.setClass1, self.setClass2]
         for classLabel in CLASSES:
             classBtn = Button(self.frame, text = classLabel, command = CLASSHANDLERS[count])
             classBtn.grid(row = count, column = 3, sticky = W+E)
@@ -162,9 +161,6 @@ class Euclid():
         self.frame.columnconfigure(1, weight = 1)
         self.frame.rowconfigure(4, weight = 1)
 
-        self.currClassLabel=1
-
-
     def loadDir(self, dbg = False):
         self.imageDir = self.entry.get()
         self.parent.focus()
@@ -194,10 +190,10 @@ class Euclid():
             os.mkdir(self.outDir)
 
 
-        self.loadImage()
+        self.loadImageAndLabels()
         print '%d images loaded from %s' %(self.total, self.imageDir)
 
-    def loadImage(self):
+    def loadImageAndLabels(self):
         # load image
         imagepath = self.imageList[self.cur - 1]
         self.img = Image.open(imagepath)
@@ -215,26 +211,31 @@ class Euclid():
         if os.path.exists(self.labelfilename):
             with open(self.labelfilename) as f:
                 for (i, line) in enumerate(f):
-                    if i == 0:
-                        bbox_cnt = int(line.strip())
-                        continue
-                    tmp = [int(t.strip()) for t in line.split()]
-##                    print tmp
-                    self.bboxList.append(tuple(tmp))
-                    tmpId = self.mainPanel.create_rectangle(tmp[0], tmp[1], \
-                                                            tmp[2], tmp[3], \
+                    bbox_cnt = len(line)
+                    tmp = [elements.strip() for elements in line.split()]
+                    bbTuple = (int(tmp[4]),int(tmp[5]), int(tmp[6]),int(tmp[7]) )
+                    self.bboxList.append( bbTuple  )
+                    tmpId = self.mainPanel.create_rectangle(int(tmp[4]), int(tmp[5]), \
+                                                            int(tmp[6]), int(tmp[7]), \
                                                             width = 2, \
                                                             outline = COLORS[(len(self.bboxList)-1) % len(COLORS)])
                     self.bboxIdList.append(tmpId)
-                    self.listbox.insert(END, '(%d, %d) -> (%d, %d) [Class %d]' %(tmp[0], tmp[1], tmp[2], tmp[3], self.currClassLabel))
+                    print elements[0]
+                    self.listbox.insert(END, '(%d, %d) -> (%d, %d) [%s]' %(int(tmp[4]), int(tmp[5]),  \
+                                                        int(tmp[6]), int(tmp[7]), tmp[0]))
                     self.listbox.itemconfig(len(self.bboxIdList) - 1, fg = COLORS[(len(self.bboxIdList) - 1) % len(COLORS)])
 
     def saveLabel(self):
         with open(self.labelfilename, 'w') as f:
             labelCnt=0
+            ##class1 0 0 0 x1,y1,x2,y2 0,0,0 0,0,0 0 0  
+            # fields ignored by DetectNet: alpha, scenario, roty, occlusion, dimensions, location.
             for bbox in self.bboxList:
-                f.write('%d  ' %self.classLabelList[labelCnt])
-                f.write(' '.join(map(str, bbox)) + '\n')
+                f.write('%s  ' %CLASSES[self.classLabelList[labelCnt]])               
+                f.write(' 0.0 0 0.0 ')
+                f.write(str(bbox[0])+' '+str(bbox[1])+' '+str(bbox[2])+' '+str(bbox[3]))
+                f.write(' 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 ')
+                f.write('\n')
                 labelCnt = labelCnt+1
         print 'Image No. %d saved' %(self.cur)
 
@@ -299,18 +300,18 @@ class Euclid():
     def prevImage(self, event = None):
         if self.cur > 1:
             self.cur -= 1
-            self.loadImage()
+            self.loadImageAndLabels()
 
     def nextImage(self, event = None):
         if self.cur < self.total:
             self.cur += 1
-            self.loadImage()
+            self.loadImageAndLabels()
 
     def gotoImage(self):
         idx = int(self.idxEntry.get())
         if 1 <= idx and idx <= self.total:
             self.cur = idx
-            self.loadImage()
+            self.loadImageAndLabels()
 
 if __name__ == '__main__':
     root = Tk()
