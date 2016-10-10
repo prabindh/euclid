@@ -107,63 +107,85 @@ class Euclid():
         self.vl = None
 
         # ----------------- GUI stuff ---------------------
-        # dir entry & load
-        self.browserBtn = Button(self.frame, text = "Select Dir", command = self.askDirectory)
-        self.browserBtn.grid(row = 0, column = 0, sticky = W+E)        
-        
-        self.entry = Entry(self.frame)
-        self.entry.grid(row = 0, column = 1, sticky = W+E)
-        self.ldBtn = Button(self.frame, text = "Load", command = self.loadDir)
-        self.ldBtn.grid(row = 0, column = 2, sticky = W+E)
-
-	    #Class labels selection
-        count = 0
-        CLASSHANDLERS = [self.setClass0, self.setClass1, self.setClass2, self.setClass3, self.setClass4, self.setClass5, self.setClass6, self.setClass7]
-        for classLabel in CLASSES:
-            classBtn = Button(self.frame, text = classLabel, command = CLASSHANDLERS[count])
-            classBtn.grid(row = count, column = 3, sticky = N)
-            count = count + 1
-
 
         # main panel for labeling
-        self.mainPanel = Canvas(self.frame, cursor='tcross', borderwidth=2, background='white')
+        self.imagePanelFrame = Frame(self.frame)
+        self.imagePanelFrame.grid(row = 0, column = 0, rowspan = 4, padx = 5, sticky = W+N)
+
+        self.imageLabel = Label(self.imagePanelFrame, text = 'Image View')
+        self.imageLabel.grid(row = 0, column = 0,  sticky = W+N)        
+        self.mainPanel = Canvas(self.imagePanelFrame, cursor='tcross', borderwidth=2, background='light blue')
         self.mainPanel.bind("<Button-1>", self.mouseClick)
         self.mainPanel.bind("<Motion>", self.mouseMove)
         self.parent.bind("<Escape>", self.cancelBBox)  # press <Escape> to cancel current bbox
         self.parent.bind("s", self.cancelBBox)
         self.parent.bind("a", self.prevImage) # press 'a' to go backforward
         self.parent.bind("d", self.nextImage) # press 'd' to go forward
-        self.mainPanel.grid(row = 1, column = 1, rowspan = 4, sticky = W+N)
+        self.mainPanel.grid(row = 1, column = 0, rowspan = 4, sticky = W+N)
 
-        # showing bbox info & delete bbox
-        self.lb1 = Label(self.frame, text = 'Bounding boxes:')
-        self.lb1.grid(row = 1, column = 2,  sticky = W+N)
-        self.listbox = Listbox(self.frame, width = 32, height = 10)
-        self.listbox.grid(row = 2, column = 2, sticky = N)
-        self.btnDel = Button(self.frame, text = 'Delete', command = self.delBBox)
-        self.btnDel.grid(row = 3, column = 2, sticky = W+E+N)
-        self.btnClear = Button(self.frame, text = 'Clear All', command = self.clearBBox)
-        self.btnClear.grid(row = 4, column = 2, sticky = W+E+N)
-        self.saveLabelBtn = Button(self.frame, text = 'Save Label', command = self.saveLabel)
-        self.saveLabelBtn.grid(row = 5, column = 2, sticky = W+E+N)
+        # Boundingbox info panel
+        self.bboxControlPanelFrame = Frame(self.frame)
+        self.bboxControlPanelFrame.grid(row = 0, column = 1, sticky = E)
 
+        self.lb1 = Label(self.bboxControlPanelFrame, text = 'Bounding box / Label list')
+        self.lb1.grid(row = 0, column = 0,  sticky = W+N)
+        self.listbox = Listbox(self.bboxControlPanelFrame, width = 40, height = 12,  background='white')
+        self.listbox.grid(row = 1, column = 0, sticky = N)
+        self.btnDel = Button(self.bboxControlPanelFrame, text = 'Delete', command = self.delBBox)
+        self.btnDel.grid(row = 2, column = 0, sticky = W+E+N)
+        self.btnClear = Button(self.bboxControlPanelFrame, text = 'Clear All', command = self.clearBBox)
+        self.btnClear.grid(row = 3, column = 0, sticky = W+E+N)
+
+	    #Class labels selection
+        # control panel for label navigation
+        CLASSHANDLERS = [self.setClass0, self.setClass1, self.setClass2, self.setClass3, self.setClass4, self.setClass5, self.setClass6, self.setClass7]
+
+        self.labelControlPanelFrame = Frame(self.frame)
+        self.labelControlPanelFrame.grid(row = 0, column = 2, padx = 5, sticky = N+E)
+        self.classLabelText = Label(self.labelControlPanelFrame, text = 'Select class before drawing box')
+        self.classLabelText.grid(row = 0, column = 0, sticky = W+E+N)
+
+        count = 0
+        for classLabel in CLASSES:
+            classBtn = Button(self.labelControlPanelFrame, text = classLabel, command = CLASSHANDLERS[count])
+            classBtn.grid(row = 1+count, column = 0, sticky = N+W)
+            count = count + 1
+
+        # dir entry & load File control panel
+        self.FileControlPanelFrame = Frame(self.frame)
+        self.FileControlPanelFrame.grid(row = 2, column = 0, pady = 30, sticky = W)
+
+        self.FileControlPanelLabel = Label(self.FileControlPanelFrame, text = '1. Select a directory (or) Enter input path')
+        self.FileControlPanelLabel.grid(row = 0, column = 0,  sticky = W+N)
+        
+        self.browserBtn = Button(self.FileControlPanelFrame, text = "Select Dir", command = self.askDirectory)
+        self.browserBtn.grid(row = 1, column = 0, sticky = N)        
+        
+        self.entry = Entry(self.FileControlPanelFrame)
+        self.entry.grid(row = 1, column = 1, sticky = N)
+        self.ldBtn = Button(self.FileControlPanelFrame, text = "Load", command = self.loadDir)
+        self.ldBtn.grid(row = 1, column = 2, sticky = N)
+            
+        
         # control panel for image navigation
         self.ctrPanel = Frame(self.frame)
-        self.ctrPanel.grid(row = 6, column = 1, columnspan = 2, sticky = W+E)
-        self.navLabel = Label(self.ctrPanel, text = 'File Navigation')
+        self.ctrPanel.grid(row = 6, column = 0, columnspan = 2, sticky = W)
+        self.navLabel = Label(self.ctrPanel, text = '2. File Navigation')
         self.navLabel.pack(side = LEFT, padx = 5, pady = 3)
         self.prevBtn = Button(self.ctrPanel, text='<< Prev', width = 10, command = self.prevImage)
         self.prevBtn.pack(side = LEFT, padx = 5, pady = 3)
+        self.saveLabelBtn = Button(self.ctrPanel, text = 'Save Current Boxes/Labels', command = self.saveLabel)
+        self.saveLabelBtn.pack(side = LEFT, padx = 5, pady = 3)
         self.nextBtn = Button(self.ctrPanel, text='Next >>', width = 10, command = self.nextImage)
         self.nextBtn.pack(side = LEFT, padx = 5, pady = 3)
-        self.progLabel = Label(self.ctrPanel, text = "Progress: [  0   /  0  ]")
-        self.progLabel.pack(side = LEFT, padx = 5)
         self.tmpLabel = Label(self.ctrPanel, text = "Go to Image No.")
         self.tmpLabel.pack(side = LEFT, padx = 5)
         self.idxEntry = Entry(self.ctrPanel, width = 5)
         self.idxEntry.pack(side = LEFT)
         self.goBtn = Button(self.ctrPanel, text = 'Go', command = self.gotoImage)
         self.goBtn.pack(side = LEFT)
+        self.progLabel = Label(self.ctrPanel, text = "Progress: [  0   /  0  ]")
+        self.progLabel.pack(side = LEFT, padx = 5)
 
         # display mouse position
         self.disp = Label(self.ctrPanel, text='')
@@ -180,7 +202,7 @@ class Euclid():
         self.imageDir = self.entry.get()
         self.parent.focus()
         if not os.path.isdir(self.imageDir):
-            tkMessageBox.showerror("Error", message = "The specified directory doesn't exist!")
+            tkMessageBox.showerror("Folder error", message = "The specified directory doesn't exist!")
             return
         # get image list
 	imageFileTypes = ('*.JPEG', '*.JPG', '*.PNG') # the tuple of file types
@@ -188,7 +210,7 @@ class Euclid():
 	for files in imageFileTypes:
 	    self.imageList.extend(glob.glob(os.path.join(self.imageDir, files.lower())) )
         if len(self.imageList) == 0:
-            tkMessageBox.showerror("Info", message = "No images (png, jpeg, jpg) found in folder!")
+            tkMessageBox.showerror("File not found", message = "No images (png, jpeg, jpg) found in folder!")
             print 'No image files found in the specified dir!'
             return
         # Change title
@@ -217,7 +239,10 @@ class Euclid():
         self.mainPanel.config(width = max(self.tkimg.width(), 400), height = max(self.tkimg.height(), 400))
         self.mainPanel.create_image(0, 0, image = self.tkimg, anchor=NW)
         self.progLabel.config(text = "%04d/%04d" %(self.cur, self.total))
-
+        
+        if self.tkimg.width() > 1024 or self.tkimg.height() > 1024:
+            tkMessageBox.showwarning("Too large image", message = "Image dimensions not suited for Deep Learning frameworks!")
+            
         # load labels
         self.clearBBox()
         self.imagename = os.path.split(imagepath)[-1].split('.')[0]
@@ -290,6 +315,11 @@ class Euclid():
             return
         self.disp.config(text = 'x: %d, y: %d' %(event.x, event.y))
         if self.tkimg:
+            if event.x > self.tkimg.width():
+                return
+            if event.y > self.tkimg.height():
+                return
+                
             if self.hl:
                 self.mainPanel.delete(self.hl)
             self.hl = self.mainPanel.create_line(0, event.y, self.tkimg.width(), event.y, width = 2)
@@ -332,16 +362,20 @@ class Euclid():
         self.bboxList = []
 
     def prevImage(self, event = None):
+        self.saveLabel()    
         if self.cur > 1:
             self.cur -= 1
             self.loadImageAndLabels()
 
     def nextImage(self, event = None):
+        self.saveLabel()
         if self.cur < self.total:
             self.cur += 1
             self.loadImageAndLabels()
 
     def gotoImage(self):
+        if self.idxEntry.get() == '':
+            return
         idx = int(self.idxEntry.get())
         if 1 <= idx and idx <= self.total:
             self.cur = idx
