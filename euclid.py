@@ -154,7 +154,7 @@ class Euclid():
 
         # dir entry & load File control panel
         self.FileControlPanelFrame = Frame(self.frame)
-        self.FileControlPanelFrame.grid(row = 2, column = 0, pady = 30, sticky = W)
+        self.FileControlPanelFrame.grid(row = 5, column = 0, pady = 30, sticky = W)
 
         self.FileControlPanelLabel = Label(self.FileControlPanelFrame, text = '1. Select a directory (or) Enter input path')
         self.FileControlPanelLabel.grid(row = 0, column = 0,  sticky = W+N)
