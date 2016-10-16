@@ -156,7 +156,7 @@ class Euclid():
         self.FileControlPanelFrame = Frame(self.frame)
         self.FileControlPanelFrame.grid(row = 5, column = 0, sticky = W)
 
-        self.FileControlPanelLabel = Label(self.FileControlPanelFrame, text = '1. Select a directory (or) Enter input path')
+        self.FileControlPanelLabel = Label(self.FileControlPanelFrame, text = '1. Select a directory (or) Enter input path, and click Load')
         self.FileControlPanelLabel.grid(row = 0, column = 0,  sticky = W+N)
         
         self.browserBtn = Button(self.FileControlPanelFrame, text = "Select Dir", command = self.askDirectory)
@@ -206,6 +206,7 @@ class Euclid():
     def askDirectory(self):
       self.imageDir = tkFileDialog.askdirectory()
       self.entry.insert(0, self.imageDir)
+      self.loadDir(self)
         
     def loadDir(self, dbg = False):
         self.imageDir = self.entry.get()
@@ -247,7 +248,7 @@ class Euclid():
         self.tkimg = ImageTk.PhotoImage(self.img)
         self.mainPanel.config(width = max(self.tkimg.width(), 400), height = max(self.tkimg.height(), 400))
         self.mainPanel.create_image(0, 0, image = self.tkimg, anchor=NW)
-        self.progLabel.config(text = "%04d/%04d" %(self.cur, self.total))
+        self.progLabel.config(text = "Progress: [ %04d / %04d ]" %(self.cur, self.total))
         self.updateStatus("Loaded file " + imagepath)
         
         if self.tkimg.width() > 1024 or self.tkimg.height() > 1024:
@@ -269,7 +270,7 @@ class Euclid():
                     self.classLabelList.append(CLASSES.index(tmp[0]))
                     #color set
                     currColor = '#%02x%02x%02x' % (self.redColor, self.greenColor, self.blueColor)
-                    self.greenColor = (self.greenColor + 25) % 255
+                    self.greenColor = (self.greenColor + 45) % 255
                     tmpId = self.mainPanel.create_rectangle(int(tmp[4]), int(tmp[5]), \
                                                             int(tmp[6]), int(tmp[7]), \
                                                             width = 2, \
@@ -294,10 +295,10 @@ class Euclid():
                     f.write(' 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 ')
                     f.write('\n')
                     labelCnt = labelCnt+1
+            self.updateStatus ('Image No. %d saved' %(self.cur))
         else:
-            print 'Unknown Label format'
-        print 'Image No. %d saved' %(self.cur)
-
+            tkMessageBox.showerror("Labelling error", message = 'Unknown Label format')
+        
 
     def mouseClick(self, event):
         if self.imagefilename == '':
@@ -311,7 +312,6 @@ class Euclid():
             self.bboxList.append((x1, y1, x2, y2))
             self.bboxIdList.append(self.bboxId)
             self.classLabelList.append(self.currClassLabel)
-            print self.classLabelList
             self.bboxId = None
             self.listbox.insert(END, '(%d, %d) -> (%d, %d)[Class %d]' %(x1, y1, x2, y2 , self.currClassLabel))
             #color set
@@ -341,7 +341,7 @@ class Euclid():
                 self.mainPanel.delete(self.bboxId)
             #color set
             currColor = '#%02x%02x%02x' % (self.redColor, self.greenColor, self.blueColor)
-            self.blueColor = (self.blueColor + 25) % 255                
+            self.blueColor = (self.blueColor + 35) % 255                
             self.bboxId = self.mainPanel.create_rectangle(self.STATE['x'], self.STATE['y'], \
                                                             event.x, event.y, \
                                                             width = 2, \
@@ -376,12 +376,18 @@ class Euclid():
         if self.cur > 1:
             self.cur -= 1
             self.loadImageAndLabels()
+        else:
+            self.updateStatus("No more previous files!")
+            tkMessageBox.showwarning("Labelling complete", message = "No previous file to label!")
 
     def nextImage(self, event = None):
         self.saveLabel()
         if self.cur < self.total:
             self.cur += 1
             self.loadImageAndLabels()
+        else:
+            self.updateStatus("No more next files!")
+            tkMessageBox.showwarning("Labelling complete", message = "No next file to label!")
 
     def gotoImage(self):
         if self.idxEntry.get() == '':
