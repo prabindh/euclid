@@ -289,9 +289,10 @@ class Euclid():
                 ##class1 0 0 0 x1,y1,x2,y2 0,0,0 0,0,0 0 0  
                 # fields ignored by DetectNet: alpha, scenario, roty, occlusion, dimensions, location.
                 for bbox in self.bboxList:
-                    f.write('%s  ' %CLASSES[self.classLabelList[labelCnt]])               
+                    f.write('%s' %CLASSES[self.classLabelList[labelCnt]])               
                     f.write(' 0.0 0 0.0 ')
-                    f.write(str(bbox[0])+' '+str(bbox[1])+' '+str(bbox[2])+' '+str(bbox[3]))
+                    #f.write(str(bbox[0])+' '+str(bbox[1])+' '+str(bbox[2])+' '+str(bbox[3]))
+                    f.write('%.2f %.2f %.2f %.2f' % (bbox[0], bbox[1], bbox[2], bbox[3]))                 
                     f.write(' 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 ')
                     f.write('\n')
                     labelCnt = labelCnt+1
