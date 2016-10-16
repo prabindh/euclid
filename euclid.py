@@ -154,7 +154,7 @@ class Euclid():
 
         # dir entry & load File control panel
         self.FileControlPanelFrame = Frame(self.frame)
-        self.FileControlPanelFrame.grid(row = 5, column = 0, pady = 30, sticky = W)
+        self.FileControlPanelFrame.grid(row = 5, column = 0, sticky = W)
 
         self.FileControlPanelLabel = Label(self.FileControlPanelFrame, text = '1. Select a directory (or) Enter input path')
         self.FileControlPanelLabel.grid(row = 0, column = 0,  sticky = W+N)
@@ -188,6 +188,14 @@ class Euclid():
         self.progLabel = Label(self.ctrPanel, text = "Progress: [  0   /  0  ]")
         self.progLabel.pack(side = LEFT, padx = 5)
 
+        # Status panel for image navigation
+        self.statusPanel = Frame(self.frame)
+        self.statusPanel.grid(row = 7, column = 0, columnspan = 3, sticky = W)
+        self.statusText = StringVar()
+        self.statusLabel = Label(self.statusPanel, textvariable = self.statusText)
+        self.statusLabel.grid(row = 0, column = 0, sticky = W+E+N)
+        self.updateStatus("Directory not selected.")
+
         # display mouse position
         self.disp = Label(self.ctrPanel, text='')
         self.disp.pack(side = RIGHT)
@@ -212,7 +220,7 @@ class Euclid():
 	    self.imageList.extend(glob.glob(os.path.join(self.imageDir, files.lower())) )
         if len(self.imageList) == 0:
             tkMessageBox.showerror("File not found", message = "No images (png, jpeg, jpg) found in folder!")
-            print 'No image files found in the specified dir!'
+            self.updateStatus( 'No image files found in the specified dir!')
             return
         # Change title
         self.parent.title("Euclid Labeller (" + self.imageDir + ") " + str(len(self.imageList)) + " images")
@@ -227,9 +235,9 @@ class Euclid():
         if not os.path.exists(self.outDir):
             os.mkdir(self.outDir)
 
-
+        self.updateStatus( '%d images loaded from %s' %(self.total, self.imageDir))
         self.loadImageAndLabels()
-        print '%d images loaded from %s' %(self.total, self.imageDir)
+
 
     def loadImageAndLabels(self):
         # load image
@@ -240,6 +248,7 @@ class Euclid():
         self.mainPanel.config(width = max(self.tkimg.width(), 400), height = max(self.tkimg.height(), 400))
         self.mainPanel.create_image(0, 0, image = self.tkimg, anchor=NW)
         self.progLabel.config(text = "%04d/%04d" %(self.cur, self.total))
+        self.updateStatus("Loaded file " + imagepath)
         
         if self.tkimg.width() > 1024 or self.tkimg.height() > 1024:
             tkMessageBox.showwarning("Too large image", message = "Image dimensions not suited for Deep Learning frameworks!")
@@ -382,6 +391,9 @@ class Euclid():
             self.cur = idx
             self.loadImageAndLabels()
 
+    def updateStatus(self, newStatus):
+        self.statusText.set("Status: " + newStatus)
+    
 if __name__ == '__main__':
     root = Tk()
     tool = Euclid(root)
