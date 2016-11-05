@@ -86,7 +86,7 @@ class Euclid():
         self.total = 0
         self.imagename = ''
         self.labelfilename = ''
-        self.currLabelMode = 'KITTI' # Other modes TODO
+        self.currLabelMode = 'YOLO' #'KITTI' #'YOLO' # Other modes TODO
         self.imagefilename = ''
         self.tkimg = None
 
@@ -219,6 +219,8 @@ class Euclid():
 	self.imageList = []
 	for files in imageFileTypes:
 	    self.imageList.extend(glob.glob(os.path.join(self.imageDir, files.lower())) )
+	    self.imageList.extend(glob.glob(os.path.join(self.imageDir, files)) )
+	    
         if len(self.imageList) == 0:
             tkMessageBox.showerror("File not found", message = "No images (png, jpeg, jpg) found in folder!")
             self.updateStatus( 'No image files found in the specified dir!')
@@ -280,6 +282,20 @@ class Euclid():
                                                         int(tmp[6]), int(tmp[7]), tmp[0]))
                     self.listbox.itemconfig(len(self.bboxIdList) - 1, fg = currColor)
 
+    def convert2Yolo(self, size, box):
+        dw = 1./size[0]
+        dh = 1./size[1]
+        x = (box[0] + box[1])/2.0
+        y = (box[2] + box[3])/2.0
+        w = box[1] - box[0]
+        h = box[3] - box[2]
+        x = x*dw
+        w = w*dw
+        y = y*dh
+        h = h*dh
+        return (x,y,w,h)
+                
+
     def saveLabel(self):
         if self.labelfilename == '':
             return
@@ -296,7 +312,22 @@ class Euclid():
                     f.write(' 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 ')
                     f.write('\n')
                     labelCnt = labelCnt+1
-            self.updateStatus ('Image No. %d saved' %(self.cur))
+            self.updateStatus ('Label Image No. %d saved' %(self.cur))
+        elif self.currLabelMode == 'YOLO':
+            with open(self.labelfilename, 'w') as f:
+                labelCnt=0
+                ##class1 center_box_x_ratio center_box_y_ratio width_ratio height_ratio
+                for bbox in self.bboxList:                
+                    yoloOut = self.convert2Yolo(
+                                [self.tkimg.width(), self.tkimg.height()], 
+                                [bbox[0], bbox[2], bbox[2]-bbox[0], bbox[3]-bbox[1]]
+                                );
+                    f.write('%s' %CLASSES[self.classLabelList[labelCnt]])               
+                    f.write('%.7f %.7f %.7f %.7f' % (yoloOut[0], yoloOut[1], yoloOut[2], yoloOut[3]))                 
+                    f.write('\n')
+                    labelCnt = labelCnt+1
+            self.updateStatus ('Label Image No. %d saved' %(self.cur))
+            
         else:
             tkMessageBox.showerror("Labelling error", message = 'Unknown Label format')
         
