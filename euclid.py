@@ -323,7 +323,7 @@ class Euclid():
                                 [bbox[0], bbox[2], bbox[2]-bbox[0], bbox[3]-bbox[1]]
                                 );
                     f.write('%s' %CLASSES[self.classLabelList[labelCnt]])               
-                    f.write('%.7f %.7f %.7f %.7f' % (yoloOut[0], yoloOut[1], yoloOut[2], yoloOut[3]))                 
+                    f.write(' %.7f %.7f %.7f %.7f' % (yoloOut[0], yoloOut[1], yoloOut[2], yoloOut[3]))                 
                     f.write('\n')
                     labelCnt = labelCnt+1
             self.updateStatus ('Label Image No. %d saved' %(self.cur))
