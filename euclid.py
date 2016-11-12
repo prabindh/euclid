@@ -283,12 +283,13 @@ class Euclid():
                     self.listbox.itemconfig(len(self.bboxIdList) - 1, fg = currColor)
 
     def convert2Yolo(self, size, box):
+        
         dw = 1./size[0]
         dh = 1./size[1]
-        x = (box[0] + box[1])/2.0
-        y = (box[2] + box[3])/2.0
-        w = box[1] - box[0]
-        h = box[3] - box[2]
+        x = (box[0] + box[2])/2.0
+        y = (box[1] + box[3])/2.0
+        w = box[2] - box[0]
+        h = box[3] - box[1]
         x = x*dw
         w = w*dw
         y = y*dh
@@ -320,7 +321,7 @@ class Euclid():
                 for bbox in self.bboxList:                
                     yoloOut = self.convert2Yolo(
                                 [self.tkimg.width(), self.tkimg.height()], 
-                                [bbox[0], bbox[2], bbox[2]-bbox[0], bbox[3]-bbox[1]]
+                                [bbox[0], bbox[1], bbox[2], bbox[3]]
                                 );
                     f.write('%s' %CLASSES[self.classLabelList[labelCnt]])               
                     f.write(' %.7f %.7f %.7f %.7f' % (yoloOut[0], yoloOut[1], yoloOut[2], yoloOut[3]))                 
