@@ -61,6 +61,18 @@ import os
 import glob
 import random
 
+# Usage
+USAGE = " \
+1. Select a Directory of images in bottom control panel \n \
+2. Click Load \n \
+3. The first image in the directory should load, along with existing labels if any. \n \
+4. Select a Class label to be used for next bounding box, in class-control panel \n \
+5. After the image is loaded, use the mouse to draw bounding boxes over the image \n \
+6. Click Save in the File Navigation panel in bottom, to save the bounding boxes \n \
+7. Labels are saved in folder named LabelData in same directory as the images \
+"
+
+
 # Object Classes (No spaces in name)
 CLASSES = ['Class0', 'Class1', 'Class2', 'Class3', 'Class4', 'Class5', 'Class6', 'Class7']
 
@@ -88,7 +100,7 @@ class Euclid():
     def __init__(self, master):
         # set up the main frame
         self.parent = master
-        self.parent.title("Euclid Labeller")
+        self.parent.title("Euclid Labeller (Press F1 for Help)")
         self.frame = Frame(self.parent)
         self.frame.pack(fill=BOTH, expand=1)
         self.parent.resizable(width = TRUE, height = TRUE)
@@ -134,6 +146,7 @@ class Euclid():
         self.mainPanel.bind("<Button-1>", self.mouseClick)
         self.mainPanel.bind("<Motion>", self.mouseMove)
         self.parent.bind("<Escape>", self.cancelBBox)  # press <Escape> to cancel current bbox
+        self.parent.bind("<F1>", self.showHelp)  # press <F1> to show help
         self.parent.bind("s", self.cancelBBox)
         self.parent.bind("a", self.prevImage) # press 'a' to go backforward
         self.parent.bind("d", self.nextImage) # press 'd' to go forward
@@ -416,6 +429,10 @@ class Euclid():
                 self.mainPanel.delete(self.bboxId)
                 self.bboxId = None
                 self.STATE['click'] = 0
+
+    def showHelp(self, event):
+        tkMessageBox.showinfo("Help", USAGE)
+
 
     def delBBox(self):
         sel = self.listbox.curselection()
