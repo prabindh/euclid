@@ -286,14 +286,16 @@ class Euclid():
                     if(len(tmp) > 5):
                         self.currLabelMode='KITTI'
                         bbTuple = (int(tmp[4]),int(tmp[5]), int(tmp[6]),int(tmp[7]) )
+                        self.classLabelList.append(CLASSES.index(tmp[0]))
+                        
                     else:
                         self.currLabelMode='YOLO'
                         bbTuple = self.GetBoundariesFromYoloFile(float(tmp[1]),float(tmp[2]), float(tmp[3]),float(tmp[4]), 
                                                             self.tkimg.width(), self.tkimg.height() )
+                        self.classLabelList.append(tmp[0])                        
                     
 
                     self.bboxList.append( bbTuple  )
-                    self.classLabelList.append(CLASSES.index(tmp[0]))
                     #color set
                     currColor = '#%02x%02x%02x' % (self.redColor, self.greenColor, self.blueColor)
                     self.greenColor = (self.greenColor + 45) % 255
@@ -351,7 +353,7 @@ class Euclid():
                                 [self.tkimg.width(), self.tkimg.height()], 
                                 [bbox[0], bbox[1], bbox[2], bbox[3]]
                                 );
-                    f.write('%s' %CLASSES[self.classLabelList[labelCnt]])               
+                    f.write('%s' %self.classLabelList[labelCnt])               
                     f.write(' %.7f %.7f %.7f %.7f' % (yoloOut[0], yoloOut[1], yoloOut[2], yoloOut[3]))                 
                     f.write('\n')
                     labelCnt = labelCnt+1
