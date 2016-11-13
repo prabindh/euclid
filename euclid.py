@@ -38,6 +38,21 @@
 #                     detection, needed for p/r curves, higher is better.
 #-------------------------------------------------------------------------------
 
+#-------------------------------------------------------------------------------
+# The YOLO format
+# All values (numerical or strings) are separated via spaces,
+# each row corresponds to one object. The 5 columns represent:
+#
+#Values    Name      Description
+#----------------------------------------------------------------------------
+#   1    Class ID     Describes the class number of object, as an integer number (0 based)
+#   1    Center_X     Float from 0 to 1, X coordinate of b-box center, normalised to image width
+#   1    Center_Y     Float from 0 to 1, Y coordinate of b-box center, normalised to image height
+#   1    Bbox_Width   Float from 0 to 1, Width of b-box, normalised to image width
+#   1    Bbox_Height  Float from 0 to 1, Height of b-box, normalised to image height
+#-------------------------------------------------------------------------------
+
+
 from Tkinter import *
 import tkMessageBox
 import tkFileDialog
@@ -267,20 +282,37 @@ class Euclid():
                 for (i, line) in enumerate(f):
                     bbox_cnt = len(line)
                     tmp = [elements.strip() for elements in line.split()]
-                    bbTuple = (int(tmp[4]),int(tmp[5]), int(tmp[6]),int(tmp[7]) )
+                    
+                    if(len(tmp) > 5):
+                        self.currLabelMode='KITTI'
+                        bbTuple = (int(tmp[4]),int(tmp[5]), int(tmp[6]),int(tmp[7]) )
+                    else:
+                        self.currLabelMode='YOLO'
+                        bbTuple = self.GetBoundariesFromYoloFile(float(tmp[1]),float(tmp[2]), float(tmp[3]),float(tmp[4]), 
+                                                            self.tkimg.width(), self.tkimg.height() )
+                    
+
                     self.bboxList.append( bbTuple  )
                     self.classLabelList.append(CLASSES.index(tmp[0]))
                     #color set
                     currColor = '#%02x%02x%02x' % (self.redColor, self.greenColor, self.blueColor)
                     self.greenColor = (self.greenColor + 45) % 255
-                    tmpId = self.mainPanel.create_rectangle(int(tmp[4]), int(tmp[5]), \
-                                                            int(tmp[6]), int(tmp[7]), \
+                    tmpId = self.mainPanel.create_rectangle(int(bbTuple[0]), int(bbTuple[1]), \
+                                                            int(bbTuple[2]), int(bbTuple[3]), \
                                                             width = 2, \
                                                             outline = currColor)
                     self.bboxIdList.append(tmpId)
-                    self.listbox.insert(END, '(%d, %d) -> (%d, %d) [%s]' %(int(tmp[4]), int(tmp[5]),  \
-                                                        int(tmp[6]), int(tmp[7]), tmp[0]))
+                    self.listbox.insert(END, '(%d, %d) -> (%d, %d) [%s]' %(int(bbTuple[0]), int(bbTuple[1]), \
+                                                            int(bbTuple[2]), int(bbTuple[3]), tmp[0]))
                     self.listbox.itemconfig(len(self.bboxIdList) - 1, fg = currColor)
+
+    def GetBoundariesFromYoloFile(self, centerX, centerY, width, height, imageWidth, imageHeight):
+        topLeftX = (int)(centerX*imageWidth - (width*imageWidth)/2)
+        topLeftY = (int)(centerY*imageHeight - (height*imageHeight)/2)
+        bottomRightX = (int)(centerX*imageWidth + (width*imageWidth)/2)
+        bottomRightY = (int)(centerY*imageHeight + (height*imageHeight)/2)
+        return topLeftX, topLeftY, bottomRightX, bottomRightY
+    
 
     def convert2Yolo(self, size, box):
         
