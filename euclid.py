@@ -314,19 +314,15 @@ class Euclid():
         return topLeftX, topLeftY, bottomRightX, bottomRightY
     
 
-    def convert2Yolo(self, size, box):
+    def convert2Yolo(self, image, boxCoords):
         
-        dw = 1./size[0]
-        dh = 1./size[1]
-        x = (box[0] + box[2])/2.0
-        y = (box[1] + box[3])/2.0
-        w = box[2] - box[0]
-        h = box[3] - box[1]
-        x = x*dw
-        w = w*dw
-        y = y*dh
-        h = h*dh
-        return (x,y,w,h)
+        invWidth = 1./image[0]
+        invHeight = 1./image[1]
+        x = invWidth * (boxCoords[0] + boxCoords[2])/2.0
+        y = invHeight * (boxCoords[1] + boxCoords[3])/2.0
+        boxWidth = invWidth * (boxCoords[2] - boxCoords[0])
+        boxHeight = invHeight * (boxCoords[3] - boxCoords[1])
+        return (x,y,boxWidth,boxHeight)
                 
 
     def saveLabel(self):
