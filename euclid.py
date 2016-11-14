@@ -4,7 +4,7 @@
 #    prabindh@yahoo.com, 2016
 #        Initial code taken from github.com/puzzledqs/BBox-Label-Tool
 #        Significantly modified to add more image types, image folders, labelling saves, and format
-#        Currently supports 8 classes, and Kitti output format
+#        Currently supports 8 classes, and Kitti and YOLO(darknet) output formats
 # Python 2.7
 # pip install pillow
 # pip install image
