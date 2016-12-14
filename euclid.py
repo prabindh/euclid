@@ -69,7 +69,9 @@ USAGE = " \
 4. Select a Class label to be used for next bounding box, in class-control panel \n \
 5. After the image is loaded, use the mouse to draw bounding boxes over the image \n \
 6. Click Save in the File Navigation panel in bottom, to save the bounding boxes \n \
-7. Labels are saved in folder named LabelData in same directory as the images \
+7. Labels are saved in folder named LabelData in same directory as the images \n \
+8. Can use Left/Right arrows for navigating prev/next images \n \
+Note: Default is YOLO format \
 "
 
 
@@ -147,9 +149,8 @@ class Euclid():
         self.mainPanel.bind("<Motion>", self.mouseMove)
         self.parent.bind("<Escape>", self.cancelBBox)  # press <Escape> to cancel current bbox
         self.parent.bind("<F1>", self.showHelp)  # press <F1> to show help
-        self.parent.bind("s", self.cancelBBox)
-        self.parent.bind("a", self.prevImage) # press 'a' to go backforward
-        self.parent.bind("d", self.nextImage) # press 'd' to go forward
+        self.parent.bind("<Left>", self.prevImage) # press 'Left Arrow' to go backforward
+        self.parent.bind("<Right>", self.nextImage) # press 'Right Arrow' to go forward
         self.mainPanel.grid(row = 1, column = 0, rowspan = 4, sticky = W+N)
 
         # Boundingbox info panel
@@ -369,9 +370,9 @@ class Euclid():
                     f.write('%s' %self.classLabelList[labelCnt])               
                     f.write(' %.7f %.7f %.7f %.7f' % (yoloOut[0], yoloOut[1], yoloOut[2], yoloOut[3]))                 
                     f.write('\n')
+                    #tkMessageBox.showinfo("Save Info", message = self.classLabelList[labelCnt])
                     labelCnt = labelCnt+1
             self.updateStatus ('Label Image No. %d saved' %(self.cur))
-            
         else:
             tkMessageBox.showerror("Labelling error", message = 'Unknown Label format')
         
