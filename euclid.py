@@ -359,7 +359,7 @@ class Euclid():
                 
 
     def saveLabel(self):
-        if self.labelfilename == '':
+        if self.labelfilename == '': 
             return            
         if self.isYoloCheckBox.get() == 0:
             self.currLabelMode = 'KITTI'
