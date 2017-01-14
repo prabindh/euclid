@@ -316,7 +316,7 @@ class Euclid():
                     
                     if(len(tmp) > 5):
                         self.currLabelMode='KITTI'
-                        bbTuple = (int(tmp[4]),int(tmp[5]), int(tmp[6]),int(tmp[7]) )
+                        bbTuple = (int(float(tmp[4])),int(float(tmp[5])), int(float(tmp[6])),int(float(tmp[7])) )
                         self.classLabelList.append(CLASSES.index(tmp[0]))
                         
                     else:
