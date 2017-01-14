@@ -3,7 +3,7 @@
 # Create and label bounding boxes
 #    prabindh@yahoo.com, 2016
 #        Initial code taken from github.com/puzzledqs/BBox-Label-Tool
-#        Significantly modified to add more image types, image folders, labelling saves, and format
+#        Significantly modified to add more image types, image folders, labelling saves, and format, and format selection
 #        Currently supports 8 classes, and Kitti and YOLO(darknet) output formats
 # Python 2.7
 # pip install pillow
@@ -72,7 +72,7 @@ USAGE = " \
 6. Click Save in the File Navigation panel in bottom, to save the bounding boxes \n \
 7. Labels are saved in folder named LabelData in same directory as the images \n \
 8. Can use Left/Right arrows for navigating prev/next images \n \
-Note: Default is YOLO format \
+Note: Default is KITTI format \
 "
 
 
