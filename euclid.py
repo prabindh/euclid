@@ -59,6 +59,7 @@ import tkFileDialog
 from PIL import Image, ImageTk
 import os
 import glob
+import sys
 import random
 
 # Usage
@@ -98,6 +99,45 @@ class Euclid():
     def setClass7(self):
         self.currClassLabel=7;
 
+    def askDirectory(self):
+      self.imageDir = tkFileDialog.askdirectory()
+      self.entry.insert(0, self.imageDir)
+      self.loadDir(self)
+        
+    def loadDir(self, dbg = False):
+        self.imageDir = self.entry.get()
+        self.parent.focus()
+        if not os.path.isdir(self.imageDir):
+            tkMessageBox.showerror("Folder error", message = "The specified directory doesn't exist!")
+            return        
+         #get image list
+        imageFileTypes = ('*.JPEG', '*.JPG', '*.PNG') # the tuple of file types
+        self.imageList = []
+        for files in imageFileTypes:
+            self.imageList.extend(glob.glob(os.path.join(self.imageDir, files.lower())) )
+            if (False == self.is_windows):
+                self.imageList.extend(glob.glob(os.path.join(self.imageDir, files)) )
+            
+        if len(self.imageList) == 0:
+            tkMessageBox.showerror("File not found", message = "No images (png, jpeg, jpg) found in folder!")
+            self.updateStatus( 'No image files found in the specified dir!')
+            return
+        # Change title
+        self.parent.title("Euclid Labeller (" + self.imageDir + ") " + str(len(self.imageList)) + " images")
+
+
+        # default to the 1st image in the collection
+        self.cur = 1
+        self.total = len(self.imageList)
+
+         # set up output dir
+        self.outDir = os.path.join(self.imageDir + '/LabelData')
+        if not os.path.exists(self.outDir):
+            os.mkdir(self.outDir)
+
+        self.updateStatus( '%d images loaded from %s' %(self.total, self.imageDir))
+        self.loadImageAndLabels()
+
         
     def __init__(self, master):
         # set up the main frame
@@ -106,6 +146,8 @@ class Euclid():
         self.frame = Frame(self.parent)
         self.frame.pack(fill=BOTH, expand=1)
         self.parent.resizable(width = TRUE, height = TRUE)
+        self.is_windows = hasattr(sys, 'getwindowsversion')
+
 
         # initialize global state
         self.imageDir = ''
@@ -195,12 +237,23 @@ class Euclid():
         self.entry.grid(row = 1, column = 1, sticky = N)
         self.ldBtn = Button(self.FileControlPanelFrame, text = "Load", command = self.loadDir)
         self.ldBtn.grid(row = 1, column = 2, sticky = N)
+        
+        self.FormatLabel = Label(self.FileControlPanelFrame, text = '2. Format Selection')
+        self.FormatLabel.grid(row = 2, column = 0, sticky = W+N)
+        self.isYoloCheckBox = IntVar()
+        self.isYoloCheckBox.set(0)    
+        self.yoloCheckBox = Radiobutton(self.FileControlPanelFrame, variable=self.isYoloCheckBox, value=1, text="Yolo Format")
+        self.yoloCheckBox.grid(row = 3, column = 0, sticky = N)
+        self.kittiCheckBox = Radiobutton(self.FileControlPanelFrame, variable=self.isYoloCheckBox, value=0, text="KITTI Format")
+        self.kittiCheckBox.grid(row = 3, column = 1, sticky = N)
+       
+            
             
         
         # control panel for image navigation
         self.ctrPanel = Frame(self.frame)
-        self.ctrPanel.grid(row = 6, column = 0, columnspan = 2, sticky = W)
-        self.navLabel = Label(self.ctrPanel, text = '2. File Navigation')
+        self.ctrPanel.grid(row = 6, column = 0, columnspan = 2, sticky = W+N)
+        self.navLabel = Label(self.ctrPanel, text = '3. File Navigation')
         self.navLabel.pack(side = LEFT, padx = 5, pady = 3)
         self.prevBtn = Button(self.ctrPanel, text='<< Prev', width = 10, command = self.prevImage)
         self.prevBtn.pack(side = LEFT, padx = 5, pady = 3)
@@ -232,43 +285,7 @@ class Euclid():
         self.frame.columnconfigure(1, weight = 1)
         self.frame.rowconfigure(4, weight = 1)
 
-    def askDirectory(self):
-      self.imageDir = tkFileDialog.askdirectory()
-      self.entry.insert(0, self.imageDir)
-      self.loadDir(self)
-        
-    def loadDir(self, dbg = False):
-        self.imageDir = self.entry.get()
-        self.parent.focus()
-        if not os.path.isdir(self.imageDir):
-            tkMessageBox.showerror("Folder error", message = "The specified directory doesn't exist!")
-            return
-        # get image list
-	imageFileTypes = ('*.JPEG', '*.JPG', '*.PNG') # the tuple of file types
-	self.imageList = []
-	for files in imageFileTypes:
-	    self.imageList.extend(glob.glob(os.path.join(self.imageDir, files.lower())) )
-	    self.imageList.extend(glob.glob(os.path.join(self.imageDir, files)) )
-	    
-        if len(self.imageList) == 0:
-            tkMessageBox.showerror("File not found", message = "No images (png, jpeg, jpg) found in folder!")
-            self.updateStatus( 'No image files found in the specified dir!')
-            return
-        # Change title
-        self.parent.title("Euclid Labeller (" + self.imageDir + ") " + str(len(self.imageList)) + " images")
 
-
-        # default to the 1st image in the collection
-        self.cur = 1
-        self.total = len(self.imageList)
-
-         # set up output dir
-        self.outDir = os.path.join(self.imageDir + '/LabelData')
-        if not os.path.exists(self.outDir):
-            os.mkdir(self.outDir)
-
-        self.updateStatus( '%d images loaded from %s' %(self.total, self.imageDir))
-        self.loadImageAndLabels()
 
 
     def loadImageAndLabels(self):
@@ -343,7 +360,12 @@ class Euclid():
 
     def saveLabel(self):
         if self.labelfilename == '':
-            return
+            return            
+        if self.isYoloCheckBox.get() == 0:
+            self.currLabelMode = 'KITTI'
+        else:
+            self.currLabelMode = 'YOLO'
+            
         if self.currLabelMode == 'KITTI':
             with open(self.labelfilename, 'w') as f:
                 labelCnt=0
