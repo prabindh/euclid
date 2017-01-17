@@ -165,6 +165,8 @@ class Euclid():
         self.STATE = {}
         self.STATE['click'] = 0
         self.STATE['x'], self.STATE['y'] = 0, 0
+        self.currentMouseX = 0;
+        self.currentMouseY = 0;
 
         #colors
         self.redColor = self.blueColor = self.greenColor = 128
@@ -189,6 +191,7 @@ class Euclid():
         self.mainPanel = Canvas(self.imagePanelFrame, cursor='tcross', borderwidth=2, background='light blue')
         self.mainPanel.bind("<Button-1>", self.mouseClick)
         self.mainPanel.bind("<Motion>", self.mouseMove)
+        self.parent.bind("x", self.selectPointXY)
         self.parent.bind("<Escape>", self.cancelBBox)  # press <Escape> to cancel current bbox
         self.parent.bind("<F1>", self.showHelp)  # press <F1> to show help
         self.parent.bind("<Left>", self.prevImage) # press 'Left Arrow' to go backforward
@@ -399,15 +402,21 @@ class Euclid():
             tkMessageBox.showerror("Labelling error", message = 'Unknown Label format')
         
 
+    def selectPointXY(self, event):
+        self.handleMouseOrXKey(self.currentMouseX, self.currentMouseY)
+
     def mouseClick(self, event):
+        self.handleMouseOrXKey(event.x, event.y)
+
+    def handleMouseOrXKey(self, xCoord, yCoord):
         if self.imagefilename == '':
             return
         if self.STATE['click'] == 0:
-            self.STATE['x'], self.STATE['y'] = event.x, event.y
+            self.STATE['x'], self.STATE['y'] = xCoord, yCoord
         else:
             #Got a new BB, store the class label also
-            x1, x2 = min(self.STATE['x'], event.x), max(self.STATE['x'], event.x)
-            y1, y2 = min(self.STATE['y'], event.y), max(self.STATE['y'], event.y)
+            x1, x2 = min(self.STATE['x'], xCoord), max(self.STATE['x'], xCoord)
+            y1, y2 = min(self.STATE['y'], yCoord), max(self.STATE['y'], yCoord)
             self.bboxList.append((x1, y1, x2, y2))
             self.bboxIdList.append(self.bboxId)
             self.classLabelList.append(self.currClassLabel)
@@ -445,6 +454,9 @@ class Euclid():
                                                             event.x, event.y, \
                                                             width = 2, \
                                                             outline = currColor)
+        #Save current xy
+        self.currentMouseX = event.x;
+        self.currentMouseY = event.y;
 
     def cancelBBox(self, event):
         if 1 == self.STATE['click']:
