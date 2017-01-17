@@ -68,7 +68,7 @@ USAGE = " \
 2. Click Load \n \
 3. The first image in the directory should load, along with existing labels if any. \n \
 4. Select a Class label to be used for next bounding box, in class-control panel \n \
-5. After the image is loaded, use the mouse to draw bounding boxes over the image \n \
+5. After the image is loaded, press x key, or mouseclick to draw bounding boxes over the image \n \
 6. Click Save in the File Navigation panel in bottom, to save the bounding boxes \n \
 7. Labels are saved in folder named LabelData in same directory as the images \n \
 8. Can use Left/Right arrows for navigating prev/next images \n \
