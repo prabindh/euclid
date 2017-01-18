@@ -101,15 +101,30 @@ class Euclid():
 
     def askDirectory(self):
       self.imageDir = tkFileDialog.askdirectory()
+      self.SavePathToConfig(self.imageDir)
       self.entry.insert(0, self.imageDir)
       self.loadDir(self)
         
+    def SavePathToConfig(self, newPath):
+        #config file
+        configFile = open(os.path.join(sys.path[0], "euclidconfig.txt"), "a+")
+        lines = configFile.readlines()
+        if(len(lines) > 10):
+            configFile.close()
+            configFile = open(os.path.join(sys.path[0], "euclidconfig.txt"), "w+")
+            configFile.write(newPath + "\n")
+            configFile.close()
+        else:
+            configFile.write(newPath + "\n")
+            configFile.close()
+
     def loadDir(self, dbg = False):
         self.imageDir = self.entry.get()
         self.parent.focus()
         if not os.path.isdir(self.imageDir):
             tkMessageBox.showerror("Folder error", message = "The specified directory doesn't exist!")
             return        
+        self.SavePathToConfig(self.imageDir)
          #get image list
         imageFileTypes = ('*.JPEG', '*.JPG', '*.PNG') # the tuple of file types
         self.imageList = []
@@ -307,6 +322,7 @@ class Euclid():
             
         # load labels
         self.clearBBox()
+        self.classLabelList = []
         self.imagename = os.path.split(imagepath)[-1].split('.')[0]
         labelname = self.imagename + '.txt'
         self.labelfilename = os.path.join(self.outDir, labelname)
