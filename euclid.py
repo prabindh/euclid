@@ -118,6 +118,13 @@ class Euclid():
             configFile.write(newPath + "\n")
             configFile.close()
 
+    def AddFileToTrainingList(self, newFile):
+        #training file
+        trainfile = open(os.path.join(sys.path[0], "train.txt"), "a+")
+        trainfile.write(newFile + "\n")
+        trainfile.close()
+
+
     def loadDir(self, dbg = False):
         self.imageDir = self.entry.get()
         self.parent.focus()
@@ -206,6 +213,7 @@ class Euclid():
         self.mainPanel = Canvas(self.imagePanelFrame, cursor='tcross', borderwidth=2, background='light blue')
         self.mainPanel.bind("<Button-1>", self.mouseClick)
         self.mainPanel.bind("<Motion>", self.mouseMove)
+        self.parent.bind("n", self.nextImage)    
         self.parent.bind("x", self.selectPointXY)
         self.parent.bind("<Escape>", self.cancelBBox)  # press <Escape> to cancel current bbox
         self.parent.bind("<F1>", self.showHelp)  # press <F1> to show help
@@ -380,6 +388,8 @@ class Euclid():
     def saveLabel(self):
         if self.labelfilename == '': 
             return            
+        if(len(self.bboxList) == 0):
+            return
         if self.isYoloCheckBox.get() == 0:
             self.currLabelMode = 'KITTI'
         else:
@@ -414,6 +424,7 @@ class Euclid():
                     #tkMessageBox.showinfo("Save Info", message = self.classLabelList[labelCnt])
                     labelCnt = labelCnt+1
             self.updateStatus ('Label Image No. %d saved' %(self.cur))
+            self.AddFileToTrainingList(self.imagefilename);
         else:
             tkMessageBox.showerror("Labelling error", message = 'Unknown Label format')
         
