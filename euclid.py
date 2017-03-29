@@ -120,7 +120,7 @@ class Euclid():
 
     def AddFileToTrainingList(self, newFile):
         #training file
-        trainfile = open(os.path.join(sys.path[0], "train.txt"), "a+")
+        trainfile = open(os.path.join(sys.path[0], "train.txt"), "ab+")
         trainfile.write(newFile + "\n")
         trainfile.close()
 
