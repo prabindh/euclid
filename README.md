@@ -1,6 +1,6 @@
 # euclid
 
-Euclid object labeller for object detection training purposes
+Euclid object labeller for object detection training purposes based on Python. Tested on Linux, Windows, and Mac.
 
 - Supports Kitti format
 - Supports Yolo darknet format (Generates bounding boxes, as well as training list file)
