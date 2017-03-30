@@ -52,16 +52,20 @@
 #   1    Bbox_Height  Float from 0 to 1, Height of b-box, normalised to image height
 #-------------------------------------------------------------------------------
 
-
-from Tkinter import *
-import tkMessageBox
-import tkFileDialog
 from PIL import Image, ImageTk
 import os
 import glob
 import sys
 import random
-
+if sys.version_info[0] < 3:
+    from Tkinter import *
+    import tkMessageBox
+    import tkFileDialog
+else:
+    from tkinter import *
+    import messagebox as tkMessageBox
+    import filedialog as tkFileDialog
+    
 # Usage
 USAGE = " \
 1. Select a Directory of images in bottom control panel \n \
