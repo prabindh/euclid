@@ -88,8 +88,10 @@ class Euclid():
     #set class label 
     def setClass0(self):
         self.currClassLabel=0;
+        self.updateCurSelClass();
     def setClass1(self):
         self.currClassLabel=1;
+        self.updateCurSelClass();
     def setClass2(self):
         self.currClassLabel=2;
     def setClass3(self):
@@ -217,12 +219,17 @@ class Euclid():
         self.mainPanel = Canvas(self.imagePanelFrame, cursor='tcross', borderwidth=2, background='light blue')
         self.mainPanel.bind("<Button-1>", self.mouseClick)
         self.mainPanel.bind("<Motion>", self.mouseMove)
-        self.parent.bind("n", self.nextImage)    
-        self.parent.bind("x", self.selectPointXY)
         self.parent.bind("<Escape>", self.cancelBBox)  # press <Escape> to cancel current bbox
         self.parent.bind("<F1>", self.showHelp)  # press <F1> to show help
-        self.parent.bind("<Left>", self.prevImage) # press 'Left Arrow' to go backforward
+        self.parent.bind("<Left>", self.prevImage) # press 'Left Arrow' to go backward
         self.parent.bind("<Right>", self.nextImage) # press 'Right Arrow' to go forward
+        self.parent.bind("a", self.prevImage) # press 'a' to go backward
+        self.parent.bind("d", self.nextImage) # press 'd' to go forward
+        self.parent.bind("s", self.clearBBox) # press 's' to clear bboxes
+        self.parent.bind("e", self.delBBox) # press 'e' to delete selected bbox
+        self.parent.bind("q", self.delImage) # press 'q' to delete image
+        self.parent.bind("0", self.setClass0) # press '0' to set class to 0
+        self.parent.bind("1", self.setClass1) # press '1' to set class to 1
         self.mainPanel.grid(row = 1, column = 0, rowspan = 4, sticky = W+N)
 
         # Boundingbox info panel
@@ -237,6 +244,8 @@ class Euclid():
         self.btnDel.grid(row = 2, column = 0, sticky = W+E+N)
         self.btnClear = Button(self.bboxControlPanelFrame, text = 'Clear All', command = self.clearBBox)
         self.btnClear.grid(row = 3, column = 0, sticky = W+E+N)
+        self.btnClear = Button(self.bboxControlPanelFrame, text = 'Delete Image', command = self.delImage)
+        self.btnClear.grid(row = 4, column = 0, sticky = W+E+N)
 
 	    #Class labels selection
         # control panel for label navigation
@@ -271,7 +280,7 @@ class Euclid():
         self.FormatLabel = Label(self.FileControlPanelFrame, text = '2. Format Selection')
         self.FormatLabel.grid(row = 2, column = 0, sticky = W+N)
         self.isYoloCheckBox = IntVar()
-        self.isYoloCheckBox.set(0)    
+        self.isYoloCheckBox.set(1)    
         self.yoloCheckBox = Radiobutton(self.FileControlPanelFrame, variable=self.isYoloCheckBox, value=1, text="Yolo Format")
         self.yoloCheckBox.grid(row = 3, column = 0, sticky = N)
         self.kittiCheckBox = Radiobutton(self.FileControlPanelFrame, variable=self.isYoloCheckBox, value=0, text="KITTI Format")
@@ -324,6 +333,9 @@ class Euclid():
         self.imagefilename = imagepath
         self.img = Image.open(imagepath)
         self.tkimg = ImageTk.PhotoImage(self.img)
+        while self.tkimg.width() > 1024 or self.tkimg.height() > 1024:
+            self.img = self.img.resize((int(self.tkimg.width()*0.75), int(self.tkimg.height()*0.75)), Image.ANTIALIAS)
+            self.tkimg = ImageTk.PhotoImage(self.img)
         self.mainPanel.config(width = max(self.tkimg.width(), 400), height = max(self.tkimg.height(), 400))
         self.mainPanel.create_image(0, 0, image = self.tkimg, anchor=NW)
         self.progLabel.config(text = "Progress: [ %04d / %04d ]" %(self.cur, self.total))
@@ -452,7 +464,7 @@ class Euclid():
             self.bboxIdList.append(self.bboxId)
             self.classLabelList.append(self.currClassLabel)
             self.bboxId = None
-            self.listbox.insert(END, '(%d, %d) -> (%d, %d)[Class %d]' %(x1, y1, x2, y2 , self.currClassLabel))
+            self.listbox.insert(END, '(%d, %d) -> (%d, %d) [%d]' %(x1, y1, x2, y2 , self.currClassLabel))
             #color set
             currColor = '#%02x%02x%02x' % (self.redColor, self.greenColor, self.blueColor)
             self.redColor = (self.redColor + 25) % 255         
@@ -510,12 +522,39 @@ class Euclid():
         self.bboxList.pop(idx)
         self.listbox.delete(idx)
 
-    def clearBBox(self):
+    def clearBBox(self, event = None):
         for idx in range(len(self.bboxIdList)):
             self.mainPanel.delete(self.bboxIdList[idx])
         self.listbox.delete(0, len(self.bboxList))
         self.bboxIdList = []
         self.bboxList = []
+
+    def delImage(self, event = None):
+        self.clearBBox()
+        self.classLabelList = []
+        os.remove(self.imagefilename)
+        os.remove(self.labelfilename)
+        if self.cur < self.total:
+            self.cur += 1
+            self.loadImageAndLabels()
+        else:
+            self.updateStatus("No more next files!")
+            tkMessageBox.showwarning("Labelling complete", message = "No next file to label!")
+
+    def updateCurSelClass(self):
+        sel = self.listbox.curselection()
+        if len(sel) != 1 :
+            return
+        idx = int(sel[0])
+        print idx
+        self.classLabelList[idx] = self.currClassLabel
+        oldBBox = self.listbox.get(idx)
+        newBBox = oldBBox.split("[")[0] + "[%d]" % self.currClassLabel
+        print oldBBox
+        print "to"
+        print newBBox
+        self.listbox.delete(idx)
+        self.listbox.insert(idx, newBBox)
 
     def prevImage(self, event = None):
         self.saveLabel()    
