@@ -376,7 +376,9 @@ class Euclid():
                     self.bboxList.append( bbTuple  )
                     #color set
                     currColor = '#%02x%02x%02x' % (self.redColor, self.greenColor, self.blueColor)
+                    # self.redColor = (self.redColor + 45) % 255
                     self.greenColor = (self.greenColor + 45) % 255
+                    # self.blueColor = (self.blueColor + 45) % 255
                     tmpId = self.mainPanel.create_rectangle(int(bbTuple[0]), int(bbTuple[1]), \
                                                             int(bbTuple[2]), int(bbTuple[3]), \
                                                             width = 2, \
@@ -525,6 +527,7 @@ class Euclid():
         self.bboxIdList.pop(idx)
         self.bboxList.pop(idx)
         self.listbox.delete(idx)
+        self.classLabelList.pop(idx)
 
     def clearBBox(self, event = None):
         for idx in range(len(self.bboxIdList)):
@@ -555,6 +558,7 @@ class Euclid():
         newBBox = oldBBox.split("[")[0] + "[%d]" % self.currClassLabel
         self.listbox.delete(idx)
         self.listbox.insert(idx, newBBox)
+        self.mainPanel.itemconfig(self.bboxIdList[idx], width = 3, outline = '#ff0000')
 
     def loadPrevLabel(self, event = None):
         if self.prevLabelFilename == '':
