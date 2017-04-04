@@ -62,6 +62,7 @@ else:
     import filedialog as tkFileDialog
 from PIL import Image, ImageTk
 import os
+import shutil
 import glob
 import random
 
@@ -86,10 +87,10 @@ CLASSES = ['Class0', 'Class1', 'Class2', 'Class3', 'Class4', 'Class5', 'Class6',
 class Euclid():
 
     #set class label 
-    def setClass0(self):
+    def setClass0(self, event = None):
         self.currClassLabel=0;
         self.updateCurSelClass();
-    def setClass1(self):
+    def setClass1(self, event = None):
         self.currClassLabel=1;
         self.updateCurSelClass();
     def setClass2(self):
@@ -185,6 +186,7 @@ class Euclid():
         self.total = 0
         self.imagename = ''
         self.labelfilename = ''
+        self.prevLabelFilename = ''
         self.currLabelMode = 'YOLO' #'KITTI' #'YOLO' # Other modes TODO
         self.imagefilename = ''
         self.tkimg = None
@@ -228,6 +230,7 @@ class Euclid():
         self.parent.bind("s", self.clearBBox) # press 's' to clear bboxes
         self.parent.bind("e", self.delBBox) # press 'e' to delete selected bbox
         self.parent.bind("q", self.delImage) # press 'q' to delete image
+        self.parent.bind("w", self.loadPrevLabel) # press 'w' to load previous label
         self.parent.bind("0", self.setClass0) # press '0' to set class to 0
         self.parent.bind("1", self.setClass1) # press '1' to set class to 1
         self.mainPanel.grid(row = 1, column = 0, rowspan = 4, sticky = W+N)
@@ -349,6 +352,7 @@ class Euclid():
         self.classLabelList = []
         self.imagename = os.path.split(imagepath)[-1].split('.')[0]
         labelname = self.imagename + '.txt'
+        self.prevLabelFilename = self.labelfilename
         self.labelfilename = os.path.join(self.outDir, labelname)
         bbox_cnt = 0
         if os.path.exists(self.labelfilename):
@@ -512,7 +516,7 @@ class Euclid():
         tkMessageBox.showinfo("Help", USAGE)
 
 
-    def delBBox(self):
+    def delBBox(self, event = None):
         sel = self.listbox.curselection()
         if len(sel) != 1 :
             return
@@ -546,15 +550,18 @@ class Euclid():
         if len(sel) != 1 :
             return
         idx = int(sel[0])
-        print idx
         self.classLabelList[idx] = self.currClassLabel
         oldBBox = self.listbox.get(idx)
         newBBox = oldBBox.split("[")[0] + "[%d]" % self.currClassLabel
-        print oldBBox
-        print "to"
-        print newBBox
         self.listbox.delete(idx)
         self.listbox.insert(idx, newBBox)
+
+    def loadPrevLabel(self, event = None):
+        if self.prevLabelFilename == '':
+            tkMessageBox.showwarning("No previous label file", message = "No previous label!")
+        else:
+            shutil.copyfile(self.prevLabelFilename,self.labelfilename)
+            self.loadImageAndLabels()
 
     def prevImage(self, event = None):
         self.saveLabel()    
