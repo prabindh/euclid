@@ -65,6 +65,7 @@ import os
 import shutil
 import glob
 import random
+import json
 
     
 # Usage
@@ -160,9 +161,12 @@ class Euclid():
         self.total = len(self.imageList)
 
          # set up output dir
-        self.outDir = os.path.join(self.imageDir + '/LabelData')
-        if not os.path.exists(self.outDir):
-            os.mkdir(self.outDir)
+        self.outLabelDir = os.path.join(self.imageDir + '/LabelData')
+        if not os.path.exists(self.outLabelDir):
+            os.mkdir(self.outLabelDir)
+        self.outCountDir = os.path.join(self.imageDir + '/CountData')
+        if not os.path.exists(self.outCountDir):
+            os.mkdir(self.outCountDir)
 
         self.updateStatus( '%d images loaded from %s' %(self.total, self.imageDir))
         self.loadImageAndLabels()
@@ -181,11 +185,14 @@ class Euclid():
         # initialize global state
         self.imageDir = ''
         self.imageList= []
-        self.outDir = ''
+        self.outLabelDir = ''
+        self.outCountDir = ''
         self.cur = 0
         self.total = 0
         self.imagename = ''
         self.labelfilename = ''
+        self.countfilename = ''
+        self.countdata = {} # TODO: should this be "{}"?
         self.prevLabelFilename = ''
         self.currLabelMode = 'YOLO' #'KITTI' #'YOLO' # Other modes TODO
         self.imagefilename = ''
@@ -240,15 +247,36 @@ class Euclid():
         self.bboxControlPanelFrame.grid(row = 0, column = 1, sticky = E)
 
         self.lb1 = Label(self.bboxControlPanelFrame, text = 'Bounding box / Label list')
-        self.lb1.grid(row = 0, column = 0,  sticky = W+N)
+        self.lb1.grid(row = 0, column = 0,  columnspan = 2, sticky = W+N)
         self.listbox = Listbox(self.bboxControlPanelFrame, width = 40, height = 12,  background='white')
-        self.listbox.grid(row = 1, column = 0, sticky = N)
+        self.listbox.grid(row = 1, column = 0, columnspan = 2, sticky = N)
         self.btnDel = Button(self.bboxControlPanelFrame, text = 'Delete', command = self.delBBox)
         self.btnDel.grid(row = 2, column = 0, sticky = W+E+N)
         self.btnClear = Button(self.bboxControlPanelFrame, text = 'Clear All', command = self.clearBBox)
         self.btnClear.grid(row = 3, column = 0, sticky = W+E+N)
-        self.btnClear = Button(self.bboxControlPanelFrame, text = 'Delete Image', command = self.delImage)
-        self.btnClear.grid(row = 4, column = 0, sticky = W+E+N)
+        self.btnDelImg = Button(self.bboxControlPanelFrame, text = 'Delete Image', command = self.delImage)
+        self.btnDelImg.grid(row = 4, column = 0, sticky = W+E+N)
+
+        # Counting info panel
+        self.countlabel = Label(self.bboxControlPanelFrame, text = 'Counting json info')
+        self.countlabel.grid(row = 5, column = 0,  sticky = W+N)
+        Label(self.bboxControlPanelFrame, text = "Uniq count in seq:").grid(row = 6, column = 0, sticky = W)
+        self.uniqEntry = Entry(self.bboxControlPanelFrame)
+        self.uniqEntry.grid(row = 6, column = 1)
+        self.btnAddUniq = Button(self.bboxControlPanelFrame, text = '+1 to Uniq', command = self.addUniq)
+        self.btnAddUniq.grid(row = 7, column = 1, sticky = W+E+N)
+        Label(self.bboxControlPanelFrame, text = "People in frame:").grid(row = 8, column = 0, sticky = W)
+        self.numInFrameEntry = Entry(self.bboxControlPanelFrame)
+        self.numInFrameEntry.grid(row = 8, column = 1)
+        self.btnSubNumInFrame = Button(self.bboxControlPanelFrame, text = '-1 to NumInFrame', command = self.subNumInFrame)
+        self.btnSubNumInFrame.grid(row = 9, column = 0, sticky = W+E+N)
+        self.btnAddNumInFrame = Button(self.bboxControlPanelFrame, text = '+1 to NumInFrame', command = self.addNumInFrame)
+        self.btnAddNumInFrame.grid(row = 9, column = 1, sticky = W+E+N)
+        Label(self.bboxControlPanelFrame, text = "Walk in count:").grid(row = 10, column = 0, sticky = W)
+        self.walkInsEntry = Entry(self.bboxControlPanelFrame)
+        self.walkInsEntry.grid(row = 10, column = 1)
+        self.btnAddWalkIn = Button(self.bboxControlPanelFrame, text = '+1 to walk ins', command = self.addWalkIn)
+        self.btnAddWalkIn.grid(row = 11, column = 1, sticky = W+E+N)
 
 	    #Class labels selection
         # control panel for label navigation
@@ -347,13 +375,15 @@ class Euclid():
         if self.tkimg.width() > 1024 or self.tkimg.height() > 1024:
             tkMessageBox.showwarning("Too large image", message = "Image dimensions not suited for Deep Learning frameworks!")
             
-        # load labels
+        # load labels and count
         self.clearBBox()
         self.classLabelList = []
         self.imagename = os.path.split(imagepath)[-1].split('.')[0]
         labelname = self.imagename + '.txt'
+        countname = self.imagename + '.json'
         self.prevLabelFilename = self.labelfilename
-        self.labelfilename = os.path.join(self.outDir, labelname)
+        self.labelfilename = os.path.join(self.outLabelDir, labelname)
+        self.countfilename = os.path.join(self.outCountDir, countname)
         bbox_cnt = 0
         if os.path.exists(self.labelfilename):
             with open(self.labelfilename) as f:
@@ -374,11 +404,12 @@ class Euclid():
                     
 
                     self.bboxList.append( bbTuple  )
-                    #color set
+                    #color set; ideally distinguishing between boxes based on sight should be easy...
+                    # TODO: make easier to distinguish between boxes
                     currColor = '#%02x%02x%02x' % (self.redColor, self.greenColor, self.blueColor)
-                    # self.redColor = (self.redColor + 45) % 255
-                    self.greenColor = (self.greenColor + 45) % 255
-                    # self.blueColor = (self.blueColor + 45) % 255
+                    self.greenColor = (self.greenColor + 75) % 255
+                    self.blueColor = (self.blueColor + 150) % 255
+                    self.redColor = (self.redColor + 15) % 255
                     tmpId = self.mainPanel.create_rectangle(int(bbTuple[0]), int(bbTuple[1]), \
                                                             int(bbTuple[2]), int(bbTuple[3]), \
                                                             width = 2, \
@@ -387,6 +418,29 @@ class Euclid():
                     self.listbox.insert(END, '(%d, %d) -> (%d, %d) [%s]' %(int(bbTuple[0]), int(bbTuple[1]), \
                                                             int(bbTuple[2]), int(bbTuple[3]), tmp[0]))
                     self.listbox.itemconfig(len(self.bboxIdList) - 1, fg = currColor)
+        if os.path.exists(self.countfilename):
+            with open(self.countfilename) as data_file:
+                self.countdata = json.load(data_file)
+                try:
+                    self.countdata["uniqNumInSeq"]
+                    self.uniqEntry.delete(0, END)
+                    self.uniqEntry.insert(0, self.countdata["uniqNumInSeq"])
+                except Exception, e:
+                    print repr(e) + "; Loading uniqNumInSeq from previous image..."
+                try:
+                    self.countdata["numInFrame"]
+                    self.numInFrameEntry.delete(0, END)
+                    self.numInFrameEntry.insert(0, self.countdata["numInFrame"])
+                except Exception, e:
+                    print repr(e) + "; Loading numInFrame from previous image..."
+                try:
+                    self.countdata["walkIns"]
+                    self.walkInsEntry.delete(0, END)
+                    self.walkInsEntry.insert(0, self.countdata["walkIns"])
+                except Exception, e:
+                    print repr(e) + "; Loading walkIns from previous image..."
+        else:
+            print "No existing count json; loading json from previous image"
 
     def GetBoundariesFromYoloFile(self, centerX, centerY, width, height, imageWidth, imageHeight):
         topLeftX = (int)(centerX*imageWidth - (width*imageWidth)/2)
@@ -397,7 +451,6 @@ class Euclid():
     
 
     def convert2Yolo(self, image, boxCoords):
-        
         invWidth = 1./image[0]
         invHeight = 1./image[1]
         x = invWidth * (boxCoords[0] + boxCoords[2])/2.0
@@ -410,6 +463,17 @@ class Euclid():
     def saveLabel(self):
         if self.labelfilename == '': 
             return            
+        if self.countfilename == '':
+            return
+        self.countdata["uniqNumInSeq"] = self.uniqEntry.get()
+        self.countdata["numInFrame"] = self.numInFrameEntry.get()
+        self.countdata["walkIns"] = self.walkInsEntry.get()
+        if not self.countdata["uniqNumInSeq"].isdigit(): tkMessageBox.showerror("Invalid uniq num", message = "Check uniq num");
+        if not self.countdata["numInFrame"].isdigit(): tkMessageBox.showerror("Invalid num in frame", message = "Check num in frame");
+        if not self.countdata["walkIns"].isdigit(): tkMessageBox.showerror("Invalid walk ins", message = "Check walk ins");
+        with open(self.countfilename, 'w') as outfile:
+            json.dump(self.countdata, outfile)
+
         if(len(self.bboxList) == 0):
             return
         if self.isYoloCheckBox.get() == 0:
@@ -449,7 +513,6 @@ class Euclid():
             self.AddFileToTrainingList(self.imagefilename);
         else:
             tkMessageBox.showerror("Labelling error", message = 'Unknown Label format')
-        
 
     def selectPointXY(self, event):
         self.handleMouseOrXKey(self.currentMouseX, self.currentMouseY)
@@ -508,6 +571,7 @@ class Euclid():
         self.currentMouseY = event.y;
 
     def cancelBBox(self, event):
+        self.parent.focus()
         if 1 == self.STATE['click']:
             if self.bboxId:
                 self.mainPanel.delete(self.bboxId)
@@ -530,6 +594,7 @@ class Euclid():
         self.classLabelList.pop(idx)
 
     def clearBBox(self, event = None):
+        self.parent.focus()
         for idx in range(len(self.bboxIdList)):
             self.mainPanel.delete(self.bboxIdList[idx])
         self.listbox.delete(0, len(self.bboxList))
@@ -537,16 +602,46 @@ class Euclid():
         self.bboxList = []
 
     def delImage(self, event = None):
+        self.parent.focus()
         self.clearBBox()
         self.classLabelList = []
         os.remove(self.imagefilename)
         os.remove(self.labelfilename)
+        os.remove(self.countfilename)
         if self.cur < self.total:
             self.cur += 1
             self.loadImageAndLabels()
         else:
             self.updateStatus("No more next files!")
             tkMessageBox.showwarning("Labelling complete", message = "No next file to label!")
+
+    def addUniq(self):
+        if self.uniqEntry.get() != '':
+            temp = int(self.uniqEntry.get())
+            self.uniqEntry.delete(0, END)
+            self.uniqEntry.insert(0, temp + 1)
+            self.parent.focus()
+
+    def addNumInFrame(self):
+        if self.numInFrameEntry.get() != '':
+            temp = int(self.numInFrameEntry.get())
+            self.numInFrameEntry.delete(0, END)
+            self.numInFrameEntry.insert(0, temp + 1)
+            self.parent.focus()
+
+    def addWalkIn(self):
+        if self.walkInsEntry.get() != '':
+            temp = int(self.walkInsEntry.get())
+            self.walkInsEntry.delete(0, END)
+            self.walkInsEntry.insert(0, temp + 1)
+            self.parent.focus()
+
+    def subNumInFrame(self, num = 1):
+        if self.numInFrameEntry.get() != '':
+            temp = int(self.numInFrameEntry.get())
+            self.numInFrameEntry.delete(0, END)
+            self.numInFrameEntry.insert(0, temp - 1)
+            self.parent.focus()
 
     def updateCurSelClass(self):
         sel = self.listbox.curselection()
@@ -561,6 +656,7 @@ class Euclid():
         self.mainPanel.itemconfig(self.bboxIdList[idx], width = 3, outline = '#ff0000')
 
     def loadPrevLabel(self, event = None):
+        self.parent.focus()
         if self.prevLabelFilename == '':
             tkMessageBox.showwarning("No previous label file", message = "No previous label!")
         else:
@@ -568,6 +664,7 @@ class Euclid():
             self.loadImageAndLabels()
 
     def prevImage(self, event = None):
+        self.parent.focus()
         self.saveLabel()    
         if self.cur > 1:
             self.cur -= 1
@@ -577,6 +674,7 @@ class Euclid():
             tkMessageBox.showwarning("Labelling complete", message = "No previous file to label!")
 
     def nextImage(self, event = None):
+        self.parent.focus()
         self.saveLabel()
         if self.cur < self.total:
             self.cur += 1
@@ -586,6 +684,7 @@ class Euclid():
             tkMessageBox.showwarning("Labelling complete", message = "No next file to label!")
 
     def gotoImage(self):
+        self.parent.focus()
         if self.idxEntry.get() == '':
             return
         idx = int(self.idxEntry.get())
