@@ -335,9 +335,7 @@ class Euclid():
         # load labels
         self.clearBBox()
         self.classLabelList = []
-        lastPartFileName, lastPartFileExtension = os.path.splitext(os.path.split(imagepath)[-1])
-        tkMessageBox.showwarning("Too large image", message = lastPartFileName)
-        
+        lastPartFileName, lastPartFileExtension = os.path.splitext(os.path.split(imagepath)[-1])      
         self.imagename = lastPartFileName
         labelname = self.imagename + '.txt'
         self.labelfilename = os.path.join(self.outDir, labelname)
