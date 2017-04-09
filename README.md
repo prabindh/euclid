@@ -35,3 +35,13 @@ Resize all jpg images to 256x256, rename to sz-256-<original-name>.jpg
 Refer below link for YOLO training and detection on Linux and Windows.
 
 https://github.com/prabindh/darknet
+
+# Dependencies
+
+ Python 2.7
+ `pip install pillow`
+ `pip install image`
+ Python 3
+ Python 3 + Pillow on Ubuntu, do the below
+ `sudo apt-get install python-imaging-tk`
+ `sudo apt-get install python3-pil.imagetk`

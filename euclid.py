@@ -8,6 +8,10 @@
 # Python 2.7
 # pip install pillow
 # pip install image
+# Python 3
+# Python 3 + Pillow on Ubuntu, do the below
+# sudo apt-get install python-imaging-tk
+# sudo apt-get install python3-pil.imagetk
 #
 #-------------------------------------------------------------------------------
 
@@ -58,8 +62,8 @@ if sys.version_info[0] < 3:
     import tkFileDialog
 else:
     from tkinter import *
-    import messagebox as tkMessageBox
-    import filedialog as tkFileDialog
+    from tkinter import messagebox as tkMessageBox
+    from tkinter import filedialog as tkFileDialog
 from PIL import Image, ImageTk
 import os
 import glob
