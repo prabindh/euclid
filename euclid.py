@@ -92,20 +92,28 @@ class Euclid():
     #set class label 
     def setClass0(self):
         self.currClassLabel=0;
+        self.currClassLabelDisplayString.set('Current Class = 0')
     def setClass1(self):
         self.currClassLabel=1;
+        self.currClassLabelDisplayString.set('Current Class = 1')        
     def setClass2(self):
         self.currClassLabel=2;
+        self.currClassLabelDisplayString.set('Current Class = 2')        
     def setClass3(self):
         self.currClassLabel=3;
+        self.currClassLabelDisplayString.set('Current Class = 3')                
     def setClass4(self):
         self.currClassLabel=4;
+        self.currClassLabelDisplayString.set('Current Class = 4')
     def setClass5(self):
         self.currClassLabel=5;
+        self.currClassLabelDisplayString.set('Current Class = 5')        
     def setClass6(self):
         self.currClassLabel=6;
+        self.currClassLabelDisplayString.set('Current Class = 6')        
     def setClass7(self):
         self.currClassLabel=7;
+        self.currClassLabelDisplayString.set('Current Class = 7')        
 
     def askDirectory(self):
       self.imageDir = tkFileDialog.askdirectory()
@@ -128,7 +136,7 @@ class Euclid():
 
     def AddFileToTrainingList(self, newFile):
         #training file
-        trainfile = open(os.path.join(sys.path[0], "train.txt"), "ab+")
+        trainfile = open(os.path.join(sys.path[0], "train.txt"), "a+")
         trainfile.write(newFile + "\n")
         trainfile.close()
 
@@ -256,6 +264,11 @@ class Euclid():
             classBtn = Button(self.labelControlPanelFrame, text = classLabel, command = CLASSHANDLERS[count])
             classBtn.grid(row = 1+count, column = 0, sticky = N+W)
             count = count + 1
+        #Display current label
+        self.currClassLabelDisplayString = StringVar()
+        self.currClassLabelDisplayString.set('Current Label = 0')
+        self.currClassLabelDisplay = Label(self.labelControlPanelFrame, textvariable = self.currClassLabelDisplayString)
+        self.currClassLabelDisplay.grid(row = 1+count, column = 0, sticky = W+E+N)            
 
         # dir entry & load File control panel
         self.FileControlPanelFrame = Frame(self.frame)
