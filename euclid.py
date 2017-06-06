@@ -85,7 +85,7 @@ Note: Default is KITTI format \
 
 
 # Object Classes (No spaces in name)
-CLASSES = ['Class0', 'Class1', 'Class2', 'Class3', 'Class4', 'Class5', 'Class6', 'Class7']
+CLASSES = ['Class0', 'Class1', 'Class2', 'Class3', 'Class4', 'Class5', 'Class6', 'Class7', 'Class8', 'Class9']
 
 class Euclid():
 
@@ -114,6 +114,12 @@ class Euclid():
     def setClass7(self):
         self.currClassLabel=7;
         self.currClassLabelDisplayString.set('Current Class = 7')        
+    def setClass8(self):
+        self.currClassLabel=8;
+        self.currClassLabelDisplayString.set('Current Class = 8')        
+    def setClass9(self):
+        self.currClassLabel=9;
+        self.currClassLabelDisplayString.set('Current Class = 9')        
 
     def askDirectory(self):
       self.imageDir = tkFileDialog.askdirectory()
@@ -252,7 +258,7 @@ class Euclid():
 
 	    #Class labels selection
         # control panel for label navigation
-        CLASSHANDLERS = [self.setClass0, self.setClass1, self.setClass2, self.setClass3, self.setClass4, self.setClass5, self.setClass6, self.setClass7]
+        CLASSHANDLERS = [self.setClass0, self.setClass1, self.setClass2, self.setClass3, self.setClass4, self.setClass5, self.setClass6, self.setClass7, self.setClass8, self.setClass9]
 
         self.labelControlPanelFrame = Frame(self.frame)
         self.labelControlPanelFrame.grid(row = 0, column = 2, padx = 5, sticky = N+E)
@@ -266,7 +272,7 @@ class Euclid():
             count = count + 1
         #Display current label
         self.currClassLabelDisplayString = StringVar()
-        self.currClassLabelDisplayString.set('Current Label = 0')
+        self.currClassLabelDisplayString.set('Current Class = 0')
         self.currClassLabelDisplay = Label(self.labelControlPanelFrame, textvariable = self.currClassLabelDisplayString)
         self.currClassLabelDisplay.grid(row = 1+count, column = 0, sticky = W+E+N)            
 
