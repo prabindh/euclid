@@ -85,7 +85,7 @@ Note: Default is KITTI format \
 
 
 # Object Classes (No spaces in name)
-CLASSES = ['Class0', 'Class1', 'Class2', 'Class3', 'Class4', 'Class5', 'Class6', 'Class7', 'Class8', 'Class9']
+CLASSES = ['Class0', 'Class1', 'Class2', 'Class3', 'Class4', 'Class5', 'Class6', 'Class7', 'Class8', 'Class9', 'Class10', 'Class11', 'Class12', 'Class13']
 
 class Euclid():
 
@@ -119,7 +119,19 @@ class Euclid():
         self.currClassLabelDisplayString.set('Current Class = 8')        
     def setClass9(self):
         self.currClassLabel=9;
-        self.currClassLabelDisplayString.set('Current Class = 9')        
+        self.currClassLabelDisplayString.set('Current Class = 9')    
+    def setClass10(self):
+        self.currClassLabel=10;
+        self.currClassLabelDisplayString.set('Current Class = 10')          
+    def setClass11(self):
+        self.currClassLabel=11;
+        self.currClassLabelDisplayString.set('Current Class = 11')          
+    def setClass12(self):
+        self.currClassLabel=12;
+        self.currClassLabelDisplayString.set('Current Class = 12')          
+    def setClass13(self):
+        self.currClassLabel=13;
+        self.currClassLabelDisplayString.set('Current Class = 13')          
 
     def askDirectory(self):
       self.imageDir = tkFileDialog.askdirectory()
@@ -258,7 +270,8 @@ class Euclid():
 
 	    #Class labels selection
         # control panel for label navigation
-        CLASSHANDLERS = [self.setClass0, self.setClass1, self.setClass2, self.setClass3, self.setClass4, self.setClass5, self.setClass6, self.setClass7, self.setClass8, self.setClass9]
+        CLASSHANDLERS = [self.setClass0, self.setClass1, self.setClass2, self.setClass3, self.setClass4, 
+                self.setClass5, self.setClass6, self.setClass7, self.setClass8, self.setClass9, self.setClass10, self.setClass11, self.setClass12, self.setClass13]
 
         self.labelControlPanelFrame = Frame(self.frame)
         self.labelControlPanelFrame.grid(row = 0, column = 2, padx = 5, sticky = N+E)
