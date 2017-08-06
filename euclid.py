@@ -1,10 +1,10 @@
 #-------------------------------------------------------------------------------
 # Euclid - Labelling tool
 # Create and label bounding boxes
-#    prabindh@yahoo.com, 2016
+#    prabindh@yahoo.com, 2017
 #        Initial code taken from github.com/puzzledqs/BBox-Label-Tool
 #        Significantly modified to add more image types, image folders, labelling saves, and format, and format selection
-#        Currently supports 8 classes, and Kitti and YOLO(darknet) output formats
+#        Currently supports Kitti and YOLO(darknet) output formats
 # Python 2.7
 # pip install pillow
 # pip install image
