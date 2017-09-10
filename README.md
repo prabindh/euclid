@@ -29,7 +29,6 @@ Resize all jpg images to 256x256, rename to sz-256-<original-name>.jpg
 
 - Euclid also generates a supplementary file "train.txt", containing the class ID and full path of training file. This can be used in YOLO format training.
 
-
 # YOLO training and detection.
 
 Refer below link for YOLO training and detection on Linux and Windows.
@@ -45,3 +44,6 @@ https://github.com/prabindh/darknet
  Python 3 + Pillow on Ubuntu, do the below
  `sudo apt-get install python-imaging-tk`
  `sudo apt-get install python3-pil.imagetk`
+
+# Converting to TensorFlow format
+After labelling the images, the labels can be read and converted to TFRecord using Python scripts available in Tensorflow, using tf.train.Example and tf.train.Features. Note: Yolo and TF share the same bounding box notations (normalised).
