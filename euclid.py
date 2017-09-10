@@ -1,10 +1,10 @@
 #-------------------------------------------------------------------------------
 # Euclid - Labelling tool
 # Create and label bounding boxes
-#    prabindh@yahoo.com, 2016
+#    prabindh@yahoo.com, 2017
 #        Initial code taken from github.com/puzzledqs/BBox-Label-Tool
 #        Significantly modified to add more image types, image folders, labelling saves, and format, and format selection
-#        Currently supports 8 classes, and Kitti and YOLO(darknet) output formats
+#        Currently supports Kitti and YOLO(darknet) output formats
 # Python 2.7
 # pip install pillow
 # pip install image
@@ -132,6 +132,9 @@ class Euclid():
     def setClass13(self):
         self.currClassLabel=13;
         self.currClassLabelDisplayString.set('Current Class = 13')          
+    def setClassN(self, N):
+        self.currClassLabel=N;
+        self.currClassLabelDisplayString.set('Current Class = '+ str(N))  
 
     def askDirectory(self):
       self.imageDir = tkFileDialog.askdirectory()
@@ -157,6 +160,15 @@ class Euclid():
         trainfile = open(os.path.join(sys.path[0], "train.txt"), "a+")
         trainfile.write(newFile + "\n")
         trainfile.close()
+        
+    def TestClassEntry(self,inStr,i,acttyp):
+        ind=int(i)
+        if acttyp == '1': #insert
+            if not inStr[ind].isdigit():
+                return False
+        
+        self.setClassN(int(inStr))
+        return True
 
 
     def loadDir(self, dbg = False):
@@ -283,11 +295,15 @@ class Euclid():
             classBtn = Button(self.labelControlPanelFrame, text = classLabel, command = CLASSHANDLERS[count])
             classBtn.grid(row = 1+count, column = 0, sticky = N+W)
             count = count + 1
+        #Provide entry fields
+        self.ClassEntry = Entry(self.labelControlPanelFrame, validate="key")
+        self.ClassEntry.grid(row = 1+count, column = 0, sticky = N)
+        self.ClassEntry['validatecommand'] = (self.ClassEntry.register(self.TestClassEntry),'%P','%i','%d')
         #Display current label
         self.currClassLabelDisplayString = StringVar()
         self.currClassLabelDisplayString.set('Current Class = 0')
         self.currClassLabelDisplay = Label(self.labelControlPanelFrame, textvariable = self.currClassLabelDisplayString)
-        self.currClassLabelDisplay.grid(row = 1+count, column = 0, sticky = W+E+N)            
+        self.currClassLabelDisplay.grid(row = 2+count, column = 0, sticky = W+E+N)            
 
         # dir entry & load File control panel
         self.FileControlPanelFrame = Frame(self.frame)
