@@ -165,9 +165,8 @@ class Euclid():
         ind=int(i)
         if acttyp == '1': #insert
             if not inStr[ind].isdigit():
-                return False
-        
-        self.setClassN(int(inStr))
+                return False        
+            self.setClassN(int(inStr))
         return True
 
 
