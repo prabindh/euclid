@@ -560,6 +560,7 @@ class Euclid():
         self.mainPanel.delete(self.bboxIdList[idx])
         self.bboxIdList.pop(idx)
         self.bboxList.pop(idx)
+        self.classLabelList.pop(idx)
         self.listbox.delete(idx)
 
     def clearBBox(self):
@@ -568,6 +569,7 @@ class Euclid():
         self.listbox.delete(0, len(self.bboxList))
         self.bboxIdList = []
         self.bboxList = []
+        self.classLabelList = []
 
     def prevImage(self, event = None):
         self.saveLabel()    
