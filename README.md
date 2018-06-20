@@ -1,5 +1,4 @@
-# euclid
-
+# euclid labeller
 Euclid object labeller for object detection training purposes based on Python. Tested on Linux, Windows, and Mac.
 
 - Supports Kitti format
