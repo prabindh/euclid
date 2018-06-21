@@ -2,11 +2,12 @@
 # Purpose:
 # To significantly augment availability of annotated data,
 # specially 2D shapes for object recognition.
+# Targeted for  Yolov2
 #
 # How to run:
 # - Place all object png images in the folder 'objects' (should be named 0.png, 1.png, .. for each object class)
 # - Place all background png images in the folder 'bg' (can be any name)
-# - Update cfgWidth, cfgHeight, numClasses - in the script, to match the framework
+# - Update cfgWidth, cfgHeight, numClasses - in the script, to match the framework requirements
 # - Invoke this script as "python <script> <object-folder-name> <bg folder name>"
 # - output image files will be written to 'output-images' and 'output-labels'
 # - Note: The labels are in Yolo format
@@ -17,25 +18,18 @@ import glob
 import random
 from rectpack import newPacker
 import sys, os
+import io
+import ntpath
 
 ################## USER CONFIGURATION ########################
 # Target framework image size for annotated data
 cfgWidth = 416
 cfgHeight = 416
 numClasses = 26
-numRuns = 1000
+numTargetImagesPerClass = 500
 ##############################################################
-##################### DO NOT CHANGE ##########################
+##################### EUCLIDAUG ##############################
 ##############################################################
- 
-class ObjProps():
-    def __init__(self, obj, prop1, prop2):
-        self.obj = obj
-        self.prop1 = prop1
-        self.prop2 = prop2
-
-        
-###############################
 def convert2Yolo(imageSize, boxCoords):
     invWidth = 1./imageSize[0]
     invHeight = 1./imageSize[1]
@@ -45,17 +39,15 @@ def convert2Yolo(imageSize, boxCoords):
     boxHeight = invHeight * (boxCoords[3] - boxCoords[1])
     return (x,y,boxWidth,boxHeight)
 
-def write2Yolo(imageSize, boxCoords, labelfilename, classLabel):
-    with open(labelfilename, 'a') as f:
-        ##class1 center_box_x_ratio center_box_y_ratio width_ratio height_ratio            
-        cx, cy, bw, bh = convert2Yolo(
-                    imageSize, 
-                    boxCoords
-                    );
-        f.write('%s' % classLabel)               
-        f.write(' %.7f %.7f %.7f %.7f' % (cx, cy, bw, bh))                 
-        f.write('\n')
-        #tkMessageBox.showinfo("Save Info", message = self.classLabelList[labelCnt])
+def write2Yolo(imageSize, boxCoords, writeObj, classLabel):
+    ##class1 center_box_x_ratio center_box_y_ratio width_ratio height_ratio            
+    cx, cy, bw, bh = convert2Yolo(
+                imageSize, 
+                boxCoords
+                );
+    writeObj.write('%s' % classLabel)               
+    writeObj.write(' %.7f %.7f %.7f %.7f' % (cx, cy, bw, bh))
+    writeObj.write('\n')
      
 def printHelp():
     return "Usage: name <objects full path> <background full path>"
@@ -63,57 +55,50 @@ def printHelp():
 def get_object_file_list(imageDir):
     imageList = []
 
-    for id in range(0, numClasses-1):
+    for id in range(0, numClasses):
         imageList.extend(glob.glob(os.path.join(imageDir, str(id) + '.png')) )
 
-    if len(imageList) == 0:
-        print( 'Error: No image files found in the specified dir [' + imageDir + ']')
     return imageList
         
 def get_file_list(imageDir):
     imageList = []
-
-    for id in range(0, numClasses-1):
-        imageList.extend(glob.glob(os.path.join(imageDir, '*.png')) )
-
-    if len(imageList) == 0:
-        print( 'Error: No image files found in the specified dir [' + imageDir + ']')
+    imageList.extend(glob.glob(os.path.join(imageDir, '*.png')) )
     return imageList
                 
-def generateOne(iterationId):
+def generateOne(iterationId, imageArray, baseImgName, baseImgObj):
     imageId = 0
-    imageArray = []
     deltaW = 0
     deltaH = 0
+    writeObj = io.StringIO()
     objectBoundary = [5,5]
+    doRandomScale = True
        
     packer = newPacker(rotation=False)
     format = 'RGBA'
-    #get object file names
-    object_file_names = get_object_file_list(sys.argv[1])
-    #get background file names
-    background_file_names = get_file_list(sys.argv[2])
     #create a list of PIL Image objects
     images = []
-    for x in object_file_names:
-        img = Image.open(x).convert(format)
-        imageArray.append(img)
-        deltaW = random.randrange(5, 32)
-        deltaH = random.randrange(5, 32)
-        packer.add_rect(img.size[0] + deltaW, img.size[1] + deltaH, imageId)
+    scales = [1.1, 1.3, 1.5, 1.7, 1.8]
+    for img in imageArray:
+        deltaW = random.randrange(5, 20)
+        deltaH = random.randrange(5, 20)
+        scaleW = 1
+        scaleH = 1
+        if(True == doRandomScale):
+            scaleW = scales[random.randrange(0, 5)]
+        if(True == doRandomScale):
+            scaleH = scales[random.randrange(0, 5)]
+        
+        packer.add_rect(int(img.size[0]*scaleW) + deltaW, int(img.size[1]*scaleH) + deltaH, imageId)
         imageId = imageId + 1
-    print("Info: Added [" + str(imageId) + "] objects")
 
     # Add the bins where the rectangles will be placed
-    #cfgWidth = cfgWidth - objectBoundary[0]
-    #cfgHeight = cfgHeight - objectBoundary[1]
     for b in [(cfgWidth, cfgHeight)]:
         packer.add_bin(*b)
 
     # Start packing
     packer.pack()
     # Open the target background image
-    finalImage = Image.open(background_file_names[0]).convert(format)
+    finalImage = Image.open(baseImgName).convert(format)
     all_rects = packer.rect_list()
     for rect in all_rects:
         b, x, y, w, h, rid = rect
@@ -129,14 +114,64 @@ def generateOne(iterationId):
         blended = Image.blend(cropped, imageArray[rid], 0.8)
         finalImage.paste(blended, area2)
         # Generate yolo notation
-        write2Yolo([cfgWidth, cfgHeight], area1,background_file_names[0]+".output.txt", rid)
+        write2Yolo([cfgWidth, cfgHeight], area1,writeObj, rid)
 
-    #finalImage.show()
-    finalImage.save(background_file_names[0]+".output" + str(iterationId) + ".png", "png")                
-                
+    return finalImage, writeObj
+
+##############################################################
+##############################################################
+##############################################################
 if __name__ == "__main__":
+    objectImageArray = []
+    baseImageArray = []
+    format = 'RGBA'
+    
     if len(sys.argv) != 3:
         printHelp()
         sys.exit(printHelp())
-    for id in range(0, numRuns-1):
-        generateOne(id)
+    # create base folders
+    imageDir = os.path.join(os.getcwd(), 'ImageData')
+    labelDir = os.path.join(os.getcwd(), 'LabelData')    
+    if not os.path.isdir(imageDir):
+        os.mkdir(imageDir)
+    if not os.path.isdir(labelDir):
+        os.mkdir(labelDir)
+        
+    #get object file names
+    object_file_names = get_object_file_list(sys.argv[1])
+    if len(object_file_names) == 0:
+        print( 'Error: No image files found in the specified dir [' + sys.argv[1] + ']')
+        sys.exit(printHelp())
+    for name in object_file_names:
+        try:
+            img = Image.open(name).convert(format)
+            objectImageArray.append(img)
+        except:
+            print("Error: Cannot open image " + name)
+            sys.exit(printHelp())
+    print("Info: Added [" + str(len(objectImageArray)) + "] object images")          
+    #get background file names
+    baseImageFileNames = get_file_list(sys.argv[2])   
+    if len(baseImageFileNames) == 0:
+        print( 'Error: No image files found in the specified dir [' + sys.argv[2] + ']')
+        sys.exit(printHelp())      
+    for name in baseImageFileNames:
+        img = Image.open(name).convert(format)
+        baseImageArray.append(img)        
+    print("Info: Added [" + str(len(baseImageFileNames)) + "] base images")    
+    
+    # Loop across background images, then runs
+    adjnumTargetImagesPerClass = int ((numTargetImagesPerClass /len(baseImageFileNames) ) + 1) 
+    print("Info: Beginning [" + str(adjnumTargetImagesPerClass*len(baseImageFileNames)) + "] images/labels" )
+    for bgId in range(0, len(baseImageFileNames)):
+        bgFileNameFull = ntpath.basename(baseImageFileNames[bgId])   
+        bgFileName, bgFileNameExt = os.path.splitext(bgFileNameFull)
+        for runId in range(0, adjnumTargetImagesPerClass):
+            genImage, genText = generateOne(runId, objectImageArray, baseImageFileNames[bgId], baseImageArray[bgId])
+            #genImage.show()
+            genImage.save(imageDir + '\\' + bgFileName+ "_" + str(bgId)+ "_" + str(runId) + ".png", "png")            
+            with open(labelDir + "\\" + bgFileName+ "_" + str(bgId) + "_" + str(runId) + ".txt", 'w') as f:
+                f.write(genText.getvalue())
+            print('.', end='', flush=True)
+    print("")
+    print("Info: Completed" )
