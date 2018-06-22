@@ -1,4 +1,4 @@
-# euclid labeller
+# euclid labeller, and euclidaug augment engine
 Euclid object labeller for object detection training purposes based on Python. Tested on Linux, Windows, and Mac.
 
 - Supports Kitti format
@@ -34,6 +34,23 @@ Refer below link for YOLO training and detection on Linux and Windows.
 
 https://github.com/prabindh/darknet
 
+# Euclidaug augment engine
+
+Refer to euclidaug folder and requirements.txt for augmentation engine
+
+Purpose:
+ To significantly augment availability of annotated data,
+ specially 2D shapes for object recognition.
+ Targeted for  Yolov2
+
+ How to run:
+ - Place all object png images in the folder 'objects' (should be named 0.png, 1.png, .. for each object class)
+ - Place all background png images in the folder 'bg' (can be any name)
+ - Update cfgWidth, cfgHeight, numClasses - in the script, to match the framework requirements
+ - Invoke this script as "python <script> <object-folder-name> <bg folder name>"
+ - output image files will be written to 'output-images' and 'output-labels'
+ - Note: The labels are in Yolo format
+
 # Dependencies
 
  Python 2.7
@@ -46,3 +63,10 @@ https://github.com/prabindh/darknet
 
 # Converting to TensorFlow format
 After labelling the images, the labels can be read and converted to TFRecord using Python scripts available in Tensorflow, using tf.train.Example and tf.train.Features. Note: Yolo and TF share the same bounding box notations (normalised).
+
+# Who uses
+
+https://github.com/dpogosov/yolo_kfm
+https://github.com/suji104
+https://github.com/VanitarNordic
+among others
