@@ -9,7 +9,7 @@
 # - Place all background png images in the folder 'bg' (can be any name)
 # - Update cfgWidth, cfgHeight, numClasses - in the script, to match the framework requirements
 # - Invoke this script as "python <script> <object-folder-name> <bg folder name>"
-# - output image files will be written to 'output-images' and 'output-labels'
+# - output image files will be written to 'output_images' and 'output_labels'
 # - Note: The labels are in Yolo format
 #############################################################################
 
@@ -20,13 +20,16 @@ from rectpack import newPacker
 import sys, os
 import io
 import ntpath
+import time
 
 ################## USER CONFIGURATION ########################
 # Target framework image size for annotated data
 cfgWidth = 416
 cfgHeight = 416
 numClasses = 26
-numTargetImagesPerClass = 500
+numTargetImagesPerClass = 50
+imageFolderName = 'out_images'
+labelFolderName = 'out_labels'
 ##############################################################
 ##################### EUCLIDAUG ##############################
 ##############################################################
@@ -72,6 +75,7 @@ def generateOne(iterationId, imageArray, baseImgName, baseImgObj):
     writeObj = io.StringIO()
     objectBoundary = [5,5]
     doRandomScale = True
+    doRandomAlpha = True
        
     packer = newPacker(rotation=False)
     format = 'RGBA'
@@ -111,7 +115,12 @@ def generateOne(iterationId, imageArray, baseImgName, baseImgObj):
         area2 = (area1[0], area1[1], area1[2], area1[3])
         # crop original for blend
         cropped = finalImage.crop(area2)
-        blended = Image.blend(cropped, imageArray[rid], 0.8)
+        alphas = [0.7, 0.75, 0.8, 0.85, 0.9]
+        alpha = 0.8
+        if(True == doRandomScale):
+            alpha = alphas[random.randrange(0, 5)]    
+        
+        blended = Image.blend(cropped, imageArray[rid], alpha)
         finalImage.paste(blended, area2)
         # Generate yolo notation
         write2Yolo([cfgWidth, cfgHeight], area1,writeObj, rid)
@@ -130,8 +139,8 @@ if __name__ == "__main__":
         printHelp()
         sys.exit(printHelp())
     # create base folders
-    imageDir = os.path.join(os.getcwd(), 'ImageData')
-    labelDir = os.path.join(os.getcwd(), 'LabelData')    
+    imageDir = os.path.join(os.getcwd(), imageFolderName)
+    labelDir = os.path.join(os.getcwd(), labelFolderName)    
     if not os.path.isdir(imageDir):
         os.mkdir(imageDir)
     if not os.path.isdir(labelDir):
@@ -162,7 +171,8 @@ if __name__ == "__main__":
     
     # Loop across background images, then runs
     adjnumTargetImagesPerClass = int ((numTargetImagesPerClass /len(baseImageFileNames) ) + 1) 
-    print("Info: Beginning [" + str(adjnumTargetImagesPerClass*len(baseImageFileNames)) + "] images/labels" )
+    timeStart = time.process_time()
+    print("Info: Beginning [" + str(adjnumTargetImagesPerClass*len(baseImageFileNames)) + "] images @ " + str(timeStart) + " (sec)" )
     for bgId in range(0, len(baseImageFileNames)):
         bgFileNameFull = ntpath.basename(baseImageFileNames[bgId])   
         bgFileName, bgFileNameExt = os.path.splitext(bgFileNameFull)
@@ -173,5 +183,6 @@ if __name__ == "__main__":
             with open(labelDir + "\\" + bgFileName+ "_" + str(bgId) + "_" + str(runId) + ".txt", 'w') as f:
                 f.write(genText.getvalue())
             print('.', end='', flush=True)
-    print("")
-    print("Info: Completed" )
+    timeEnd = time.process_time() - timeStart            
+    print("")    
+    print("Info: Completed @ " + str(timeEnd - timeStart) + " (sec)" )
