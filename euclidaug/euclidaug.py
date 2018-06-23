@@ -8,9 +8,12 @@
 # - Place all object png images in the folder 'objects' (should be named 0.png, 1.png, .. for each object class)
 # - Place all background png images in the folder 'bg' (can be any name)
 # - Update cfgWidth, cfgHeight, numClasses - in the script, to match the framework requirements
-# - Invoke this script as "python <script> <object-folder-name> <bg folder name>"
+# - Invoke this script as "python <script> <object-folder-name> <bg folder name> <output train list name>"
 # - output image files will be written to 'output_images' and 'output_labels'
-# - Note: The labels are in Yolo format
+# - output training list file will be written containing all image paths
+# - Note: The labels are in Yolo format (centerx,centery, w,h)
+#
+# Prabindh Sundareson, prabindh@yahoo.com
 #############################################################################
 
 from PIL import Image
@@ -27,7 +30,7 @@ import time
 cfgWidth = 416
 cfgHeight = 416
 numClasses = 26
-numTargetImagesPerClass = 50
+numTargetImagesPerClass = 10
 imageFolderName = 'out_images'
 labelFolderName = 'out_labels'
 ##############################################################
@@ -53,7 +56,7 @@ def write2Yolo(imageSize, boxCoords, writeObj, classLabel):
     writeObj.write('\n')
      
 def printHelp():
-    return "Usage: name <objects full path> <background full path>"
+    return "Usage: name <input objects dir fullpath> <input backgrounds dir fullpath> <output training file fullpath>"
     
 def get_object_file_list(imageDir):
     imageList = []
@@ -80,7 +83,7 @@ def generateOne(iterationId, imageArray, baseImgName, baseImgObj):
     packer = newPacker(rotation=False)
     format = 'RGBA'
     #create a list of PIL Image objects
-    images = []
+    scaledImageArray = []
     scales = [1.1, 1.3, 1.5, 1.7, 1.8]
     for img in imageArray:
         deltaW = random.randrange(5, 20)
@@ -88,11 +91,11 @@ def generateOne(iterationId, imageArray, baseImgName, baseImgObj):
         scaleW = 1
         scaleH = 1
         if(True == doRandomScale):
-            scaleW = scales[random.randrange(0, 5)]
-        if(True == doRandomScale):
-            scaleH = scales[random.randrange(0, 5)]
+            scaleW = scaleH = scales[random.randrange(0, 5)]           
         
-        packer.add_rect(int(img.size[0]*scaleW) + deltaW, int(img.size[1]*scaleH) + deltaH, imageId)
+        img = img.resize((int(img.size[0]*scaleW),int(img.size[1]*scaleH)), Image.BICUBIC)
+        scaledImageArray.append(img)        
+        packer.add_rect( img.size[0] + deltaW,  img.size[1] + deltaH, imageId)
         imageId = imageId + 1
 
     # Add the bins where the rectangles will be placed
@@ -110,17 +113,17 @@ def generateOne(iterationId, imageArray, baseImgName, baseImgObj):
         area1 = [
             x+objectBoundary[0],
             y+objectBoundary[1],
-            x+objectBoundary[0]+imageArray[rid].size[0], 
-            y+objectBoundary[1]+imageArray[rid].size[1]]
+            x+objectBoundary[0]+scaledImageArray[rid].size[0], 
+            y+objectBoundary[1]+scaledImageArray[rid].size[1]]
         area2 = (area1[0], area1[1], area1[2], area1[3])
         # crop original for blend
         cropped = finalImage.crop(area2)
-        alphas = [0.7, 0.75, 0.8, 0.85, 0.9]
+        alphas = [0.7, 0.73, 0.75, 0.78, 0.8]
         alpha = 0.8
-        if(True == doRandomScale):
+        if(True == doRandomAlpha):
             alpha = alphas[random.randrange(0, 5)]    
         
-        blended = Image.blend(cropped, imageArray[rid], alpha)
+        blended = Image.blend(cropped, scaledImageArray[rid], alpha)
         finalImage.paste(blended, area2)
         # Generate yolo notation
         write2Yolo([cfgWidth, cfgHeight], area1,writeObj, rid)
@@ -134,13 +137,16 @@ if __name__ == "__main__":
     objectImageArray = []
     baseImageArray = []
     format = 'RGBA'
+    trainListObj = io.StringIO()
     
-    if len(sys.argv) != 3:
+    if len(sys.argv) != 4:
         printHelp()
         sys.exit(printHelp())
     # create base folders
     imageDir = os.path.join(os.getcwd(), imageFolderName)
-    labelDir = os.path.join(os.getcwd(), labelFolderName)    
+    labelDir = os.path.join(os.getcwd(), labelFolderName)  
+    trainFileName = sys.argv[3]
+    
     if not os.path.isdir(imageDir):
         os.mkdir(imageDir)
     if not os.path.isdir(labelDir):
@@ -179,10 +185,14 @@ if __name__ == "__main__":
         for runId in range(0, adjnumTargetImagesPerClass):
             genImage, genText = generateOne(runId, objectImageArray, baseImageFileNames[bgId], baseImageArray[bgId])
             #genImage.show()
-            genImage.save(imageDir + '\\' + bgFileName+ "_" + str(bgId)+ "_" + str(runId) + ".png", "png")            
+            genImageName = imageDir + '\\' + bgFileName+ "_" + str(bgId)+ "_" + str(runId) + ".png"
+            genImage.save(genImageName, "png")            
             with open(labelDir + "\\" + bgFileName+ "_" + str(bgId) + "_" + str(runId) + ".txt", 'w') as f:
                 f.write(genText.getvalue())
+            trainListObj.write('%s\n' % genImageName)
             print('.', end='', flush=True)
-    timeEnd = time.process_time() - timeStart            
+    with open(trainFileName, "w") as f:
+        f.write(trainListObj.getvalue())
+    timeEnd = time.process_time() - timeStart
     print("")    
     print("Info: Completed @ " + str(timeEnd - timeStart) + " (sec)" )
