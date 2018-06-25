@@ -2,7 +2,7 @@
 # Purpose:
 # To significantly augment availability of annotated data,
 # specially 2D shapes for object recognition.
-# Targeted for  Yolov2
+# Targeted for  Yolov2 and Yolov3. Can be modified trivially for KITTI and others for Caffe.
 #
 # How to run:
 # - Place all object png images in the folder 'objects' (should be named 0.png, 1.png, .. for each object class)

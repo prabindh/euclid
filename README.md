@@ -34,16 +34,25 @@ Refer below link for YOLO training and detection on Linux and Windows.
 
 https://github.com/prabindh/darknet
 
-# Euclidaug augment engine
+Prebuilt binaries for Yolo are provided at https://github.com/prabindh/yolo-bins
 
-Refer to euclidaug folder and requirements.txt for augmentation engine
+# Euclidaug image augmentation engine
 
-## Purpose:
- To significantly augment availability of annotated data (# of images),
- specially 2D shapes for object recognition.
- Targeted for  Yolov2
+Lack of training images reduces training accuracy, when manual annotation is not an option. euclidaug serves to improve availability of training images, specially 2D.
 
-## How to run example objects (part of the tree):
+Euclidaug can generate 1000s of annotated/labelled training images in minutes.
+
+## Installing euclidaug
+
+cd euclidaug
+
+pip install -r requirements.txt
+
+## Purpose of euclidaug:
+
+ To significantly augment availability of annotated data (# of images), specially 2D shapes for object recognition. Targeted for  Yolo
+
+## How to run for example animal images (part of the tree):
 
 (The images were taken from https://www.freeiconspng.com/img/1075, https://www.freeiconspng.com/img/1065, https://www.freeiconspng.com/img/1052)
 
