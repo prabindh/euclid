@@ -39,7 +39,7 @@ https://github.com/prabindh/darknet
 Refer to euclidaug folder and requirements.txt for augmentation engine
 
 ## Purpose:
- To significantly augment availability of annotated data,
+ To significantly augment availability of annotated data (# of images),
  specially 2D shapes for object recognition.
  Targeted for  Yolov2
 
@@ -48,6 +48,8 @@ Refer to euclidaug folder and requirements.txt for augmentation engine
 Assuming euclid is cloned at c:\xxx, run the below command:
 
 python euclidaug.py C:\xxx\euclid\euclidaug\sample-objects C:\xxx\euclid\euclidaug\sample-background C:\xxx\euclid\euclidaug\train-sample.txt
+
+After seeing below, the augmented outputs will be generated in out_images and out_labels.
 
 Info: Added [3] object images, Max obj/class of [1]
 Info: Added [1] base images
