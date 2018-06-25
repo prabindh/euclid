@@ -38,17 +38,30 @@ https://github.com/prabindh/darknet
 
 Refer to euclidaug folder and requirements.txt for augmentation engine
 
-Purpose:
+## Purpose:
  To significantly augment availability of annotated data,
  specially 2D shapes for object recognition.
  Targeted for  Yolov2
 
- How to run:
- - Place all object png images in the folder 'objects' (should be named 0.png, 1.png, .. for each object class)
- - Place all background png images in the folder 'bg' (can be any name)
+## How to run example objects (part of the tree):
+
+Assuming euclid is cloned at c:\xxx, run the below command:
+
+python euclidaug.py C:\xxx\euclid\euclidaug\sample-objects C:\xxx\euclid\euclidaug\sample-background C:\xxx\euclid\euclidaug\train-sample.txt
+
+Info: Added [3] object images, Max obj/class of [1]
+Info: Added [1] base images
+Info: Beginning [11] images @ 0.421875 (sec)
+...........
+Info: Completed @ 0.265625 (sec)
+ 
+ How to run adding new classes:
+ - Place all object png images in a directory organised by IDs (for 3 classes, folders should be named as 0,1,2)
+ - Place all background png images in a folder (can be any name)
  - Update cfgWidth, cfgHeight, numClasses - in the script, to match the framework requirements
- - Invoke this script as "python <script> <object-folder-name> <bg folder name>"
- - output image files will be written to 'output-images' and 'output-labels'
+ - Invoke this script as "python <script> <object-folder-name> <bg folder name> <training filename>"
+ - output image files will be written to 'output-images' and 'output-labels' and training list file will be written
+ 
  - Note: The labels are in Yolo format
 
 # Dependencies

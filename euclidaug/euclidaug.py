@@ -29,13 +29,14 @@ import time
 # Target framework image size for annotated data
 cfgWidth = 416
 cfgHeight = 416
-numClasses = 26
+numClasses = 3
 numTargetImagesPerClass = 10
 imageFolderName = 'out_images'
 labelFolderName = 'out_labels'
 ##############################################################
 ##################### EUCLIDAUG ##############################
 ##############################################################
+       
 def convert2Yolo(imageSize, boxCoords):
     invWidth = 1./imageSize[0]
     invHeight = 1./imageSize[1]
@@ -58,6 +59,24 @@ def write2Yolo(imageSize, boxCoords, writeObj, classLabel):
 def printHelp():
     return "Usage: name <input objects dir fullpath> <input backgrounds dir fullpath> <output training file fullpath>"
     
+    
+def get_object_file_list2(imageDir):
+    imageList = []
+    count = 0
+    perClassImageCount = 0
+    maxPerClassImageCount = 0
+    for id in range(0, numClasses):
+        imagesPerClass = [] 
+        perClassImageCount = 0
+        imagesPerClass.extend(glob.glob(os.path.join(imageDir+"\\"+str(id), '*.png')) )
+        imageList.append(imagesPerClass)
+        perClassImageCount = len(imagesPerClass)
+        if (perClassImageCount > maxPerClassImageCount):
+            maxPerClassImageCount = perClassImageCount
+        count = count + 1
+
+    return imageList, count, maxPerClassImageCount
+    
 def get_object_file_list(imageDir):
     imageList = []
 
@@ -71,7 +90,7 @@ def get_file_list(imageDir):
     imageList.extend(glob.glob(os.path.join(imageDir, '*.png')) )
     return imageList
                 
-def generateOne(iterationId, imageArray, baseImgName, baseImgObj):
+def generateOne(iterationId, imageArrayAllClasses, baseImgName, baseImgObj):
     imageId = 0
     deltaW = 0
     deltaH = 0
@@ -85,9 +104,15 @@ def generateOne(iterationId, imageArray, baseImgName, baseImgObj):
     #create a list of PIL Image objects
     scaledImageArray = []
     scales = [1.1, 1.3, 1.5, 1.7, 1.8]
-    for img in imageArray:
-        deltaW = random.randrange(5, 20)
-        deltaH = random.randrange(5, 20)
+       
+    # imageArrayAllClasses[numClasses][imagesPerClass] - for all classes, Choose a random image in each class
+    for classId in range(0, numClasses):
+        perClassCount = len(imageArrayAllClasses[classId])
+        selectedInClass = random.randrange(0, perClassCount)
+        img = imageArrayAllClasses[classId][selectedInClass]
+
+        deltaW = random.randrange(10, 20)
+        deltaH = random.randrange(10, 20)
         scaleW = 1
         scaleH = 1
         if(True == doRandomScale):
@@ -134,7 +159,7 @@ def generateOne(iterationId, imageArray, baseImgName, baseImgObj):
 ##############################################################
 ##############################################################
 if __name__ == "__main__":
-    objectImageArray = []
+
     baseImageArray = []
     format = 'RGBA'
     trainListObj = io.StringIO()
@@ -152,19 +177,25 @@ if __name__ == "__main__":
     if not os.path.isdir(labelDir):
         os.mkdir(labelDir)
         
-    #get object file names
-    object_file_names = get_object_file_list(sys.argv[1])
-    if len(object_file_names) == 0:
+    #get ImageName[classCount][ImagesPerClass]
+    perClassImageNamesArray, imageCount, MAX_IMAGES_PER_CLASS = get_object_file_list2(sys.argv[1])
+    if imageCount == 0:
         print( 'Error: No image files found in the specified dir [' + sys.argv[1] + ']')
         sys.exit(printHelp())
-    for name in object_file_names:
-        try:
-            img = Image.open(name).convert(format)
-            objectImageArray.append(img)
-        except:
-            print("Error: Cannot open image " + name)
-            sys.exit(printHelp())
-    print("Info: Added [" + str(len(objectImageArray)) + "] object images")          
+        
+    
+    objectImageArrayAllClasses = []      #array[numClasses][imagesPerClass]    
+    for classId in range(0, numClasses):
+        for classImageName in perClassImageNamesArray[classId]:
+            try:
+                img = Image.open(classImageName).convert(format)
+            except:
+                print("Error: Cannot open image " + classImageName)
+                sys.exit(printHelp())
+            objectImageArrayAllClasses.append([])
+            objectImageArrayAllClasses[classId].append(img)
+        
+    print("Info: Added [" + str(len(objectImageArrayAllClasses)) + "] object images, Max obj/class of [" + str(MAX_IMAGES_PER_CLASS) + "]")
     #get background file names
     baseImageFileNames = get_file_list(sys.argv[2])   
     if len(baseImageFileNames) == 0:
@@ -183,7 +214,7 @@ if __name__ == "__main__":
         bgFileNameFull = ntpath.basename(baseImageFileNames[bgId])   
         bgFileName, bgFileNameExt = os.path.splitext(bgFileNameFull)
         for runId in range(0, adjnumTargetImagesPerClass):
-            genImage, genText = generateOne(runId, objectImageArray, baseImageFileNames[bgId], baseImageArray[bgId])
+            genImage, genText = generateOne(runId, objectImageArrayAllClasses, baseImageFileNames[bgId], baseImageArray[bgId])
             #genImage.show()
             genImageName = imageDir + '\\' + bgFileName+ "_" + str(bgId)+ "_" + str(runId) + ".png"
             genImage.save(genImageName, "png")            
