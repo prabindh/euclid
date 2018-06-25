@@ -45,6 +45,8 @@ Refer to euclidaug folder and requirements.txt for augmentation engine
 
 ## How to run example objects (part of the tree):
 
+(The images were taken from https://www.freeiconspng.com/img/1075, https://www.freeiconspng.com/img/1065, https://www.freeiconspng.com/img/1052)
+
 Assuming euclid is cloned at c:\xxx, run the below command:
 
 python euclidaug.py C:\xxx\euclid\euclidaug\sample-objects C:\xxx\euclid\euclidaug\sample-background C:\xxx\euclid\euclidaug\train-sample.txt
