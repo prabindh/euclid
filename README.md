@@ -38,6 +38,8 @@ Prebuilt binaries for Yolo are provided at https://github.com/prabindh/yolo-bins
 
 # Euclidaug image augmentation engine
 
+![alt text](euclidaug/sample_output.png)
+
 Lack of training images reduces training accuracy, when manual annotation is not an option. euclidaug serves to improve availability of training images, specially 2D.
 
 Euclidaug can generate 1000s of annotated/labelled training images in minutes.
@@ -75,7 +77,7 @@ Info: Completed @ 0.265625 (sec)
  - Invoke this script as "python <script> <object-folder-name> <bg folder name> <training filename>"
  - output image files will be written to 'output-images' and 'output-labels' and training list file will be written
  
- - Note: The labels are in Yolo format
+ - Note: The labels are in Yolo format, and output image files will be of same resolution as that of the "background" images.
 
 # Dependencies
 
