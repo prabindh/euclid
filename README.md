@@ -50,6 +50,10 @@ cd euclidaug
 
 pip install -r requirements.txt
 
+## Augmentation operations:
+
+Random scaling, random packing, and random blending - are the operations performed on the images
+
 ## Purpose of euclidaug:
 
  To significantly augment availability of annotated data (# of images), specially 2D shapes for object recognition. Targeted for  Yolo
