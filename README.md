@@ -8,6 +8,8 @@ Dynamic selection of format is now supported.
 
 Optimised box selection using keyboard shortcuts.
 
+![alt text](euclidscreen.png)
+
 # Typical object labelling workflow using Euclid:
 
 Create a folder containing the images
