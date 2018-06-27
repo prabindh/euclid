@@ -84,54 +84,9 @@ Note: Default is KITTI format \
 "
 
 
-# Object Classes (No spaces in name)
-CLASSES = ['Class0', 'Class1', 'Class2', 'Class3', 'Class4', 'Class5', 'Class6', 'Class7', 'Class8', 'Class9', 'Class10', 'Class11', 'Class12', 'Class13']
-
 class Euclid():
 
-    #set class label 
-    def setClass0(self):
-        self.currClassLabel=0;
-        self.currClassLabelDisplayString.set('Current Class = 0')
-    def setClass1(self):
-        self.currClassLabel=1;
-        self.currClassLabelDisplayString.set('Current Class = 1')        
-    def setClass2(self):
-        self.currClassLabel=2;
-        self.currClassLabelDisplayString.set('Current Class = 2')        
-    def setClass3(self):
-        self.currClassLabel=3;
-        self.currClassLabelDisplayString.set('Current Class = 3')                
-    def setClass4(self):
-        self.currClassLabel=4;
-        self.currClassLabelDisplayString.set('Current Class = 4')
-    def setClass5(self):
-        self.currClassLabel=5;
-        self.currClassLabelDisplayString.set('Current Class = 5')        
-    def setClass6(self):
-        self.currClassLabel=6;
-        self.currClassLabelDisplayString.set('Current Class = 6')        
-    def setClass7(self):
-        self.currClassLabel=7;
-        self.currClassLabelDisplayString.set('Current Class = 7')        
-    def setClass8(self):
-        self.currClassLabel=8;
-        self.currClassLabelDisplayString.set('Current Class = 8')        
-    def setClass9(self):
-        self.currClassLabel=9;
-        self.currClassLabelDisplayString.set('Current Class = 9')    
-    def setClass10(self):
-        self.currClassLabel=10;
-        self.currClassLabelDisplayString.set('Current Class = 10')          
-    def setClass11(self):
-        self.currClassLabel=11;
-        self.currClassLabelDisplayString.set('Current Class = 11')          
-    def setClass12(self):
-        self.currClassLabel=12;
-        self.currClassLabelDisplayString.set('Current Class = 12')          
-    def setClass13(self):
-        self.currClassLabel=13;
-        self.currClassLabelDisplayString.set('Current Class = 13')          
+    #set class label      
     def setClassN(self, N):
         self.currClassLabel=N;
         self.currClassLabelDisplayString.set('Current Class = '+ str(N))  
@@ -165,7 +120,7 @@ class Euclid():
         ind=int(i)
         if acttyp == '1': #insert
             if not inStr[ind].isdigit():
-                return False        
+                return False
             self.setClassN(int(inStr))
         return True
 
@@ -214,6 +169,7 @@ class Euclid():
         self.frame.pack(fill=BOTH, expand=1)
         self.parent.resizable(width = TRUE, height = TRUE)
         self.is_windows = hasattr(sys, 'getwindowsversion')
+        self.cancelKnownBox = False;
 
 
         # initialize global state
@@ -232,6 +188,7 @@ class Euclid():
         self.STATE = {}
         self.STATE['click'] = 0
         self.STATE['x'], self.STATE['y'] = 0, 0
+        self.STATE['prevX'], self.STATE['prevY'] = 0, 0        
         self.currentMouseX = 0;
         self.currentMouseY = 0;
 
@@ -264,6 +221,8 @@ class Euclid():
         self.parent.bind("<F1>", self.showHelp)  # press <F1> to show help
         self.parent.bind("<Left>", self.prevImage) # press 'Left Arrow' to go backforward
         self.parent.bind("<Right>", self.nextImage) # press 'Right Arrow' to go forward
+        self.parent.bind("c", self.cancelKnownBoxFunc) # Cancel knownbox
+        
         self.mainPanel.grid(row = 1, column = 0, rowspan = 4, sticky = W+N)
 
         # Boundingbox info panel
@@ -272,7 +231,7 @@ class Euclid():
 
         self.lb1 = Label(self.bboxControlPanelFrame, text = 'Bounding box / Label list')
         self.lb1.grid(row = 0, column = 0,  sticky = W+N)
-        self.listbox = Listbox(self.bboxControlPanelFrame, width = 40, height = 12,  background='white')
+        self.listbox = Listbox(self.bboxControlPanelFrame, width = 40, height = 22,  background='white')
         self.listbox.grid(row = 1, column = 0, sticky = N)
         self.btnDel = Button(self.bboxControlPanelFrame, text = 'Delete', command = self.delBBox)
         self.btnDel.grid(row = 2, column = 0, sticky = W+E+N)
@@ -281,19 +240,12 @@ class Euclid():
 
 	    #Class labels selection
         # control panel for label navigation
-        CLASSHANDLERS = [self.setClass0, self.setClass1, self.setClass2, self.setClass3, self.setClass4, 
-                self.setClass5, self.setClass6, self.setClass7, self.setClass8, self.setClass9, self.setClass10, self.setClass11, self.setClass12, self.setClass13]
-
         self.labelControlPanelFrame = Frame(self.frame)
         self.labelControlPanelFrame.grid(row = 0, column = 2, padx = 5, sticky = N+E)
-        self.classLabelText = Label(self.labelControlPanelFrame, text = 'Select class before drawing box')
+        self.classLabelText = Label(self.labelControlPanelFrame, text = '3. Select class before drawing box')
         self.classLabelText.grid(row = 0, column = 0, sticky = W+E+N)
 
         count = 0
-        for classLabel in CLASSES:
-            classBtn = Button(self.labelControlPanelFrame, text = classLabel, command = CLASSHANDLERS[count])
-            classBtn.grid(row = 1+count, column = 0, sticky = N+W)
-            count = count + 1
         #Provide entry fields
         self.ClassEntry = Entry(self.labelControlPanelFrame, validate="key")
         self.ClassEntry.grid(row = 1+count, column = 0, sticky = N)
@@ -334,7 +286,7 @@ class Euclid():
         # control panel for image navigation
         self.ctrPanel = Frame(self.frame)
         self.ctrPanel.grid(row = 6, column = 0, columnspan = 2, sticky = W+N)
-        self.navLabel = Label(self.ctrPanel, text = '3. File Navigation')
+        self.navLabel = Label(self.ctrPanel, text = '4. File Navigation')
         self.navLabel.pack(side = LEFT, padx = 5, pady = 3)
         self.prevBtn = Button(self.ctrPanel, text='<< Prev', width = 10, command = self.prevImage)
         self.prevBtn.pack(side = LEFT, padx = 5, pady = 3)
@@ -400,7 +352,7 @@ class Euclid():
                     if(len(tmp) > 5):
                         self.currLabelMode='KITTI'
                         bbTuple = (int(float(tmp[4])),int(float(tmp[5])), int(float(tmp[6])),int(float(tmp[7])) )
-                        self.classLabelList.append(CLASSES.index(tmp[0]))
+                        self.classLabelList.append('Class'+tmp[0])
                         
                     else:
                         self.currLabelMode='YOLO'
@@ -457,7 +409,7 @@ class Euclid():
                 ##class1 0 0 0 x1,y1,x2,y2 0,0,0 0,0,0 0 0  
                 # fields ignored by DetectNet: alpha, scenario, roty, occlusion, dimensions, location.
                 for bbox in self.bboxList:
-                    f.write('%s' %CLASSES[self.classLabelList[labelCnt]])               
+                    f.write('%s' % 'Class'+ str(self.classLabelList[labelCnt]))               
                     f.write(' 0.0 0 0.0 ')
                     #f.write(str(bbox[0])+' '+str(bbox[1])+' '+str(bbox[2])+' '+str(bbox[3]))
                     f.write('%.2f %.2f %.2f %.2f' % (bbox[0], bbox[1], bbox[2], bbox[3]))                 
@@ -507,10 +459,44 @@ class Euclid():
             self.listbox.insert(END, '(%d, %d) -> (%d, %d)[Class %d]' %(x1, y1, x2, y2 , self.currClassLabel))
             #color set
             currColor = '#%02x%02x%02x' % (self.redColor, self.greenColor, self.blueColor)
-            self.redColor = (self.redColor + 25) % 255         
+            self.redColor = 25 + (self.redColor + 25) % 200         
             self.listbox.itemconfig(len(self.bboxIdList) - 1, fg = currColor)
         self.STATE['click'] = 1 - self.STATE['click']
 
+    def handleMouseOrXKeyKnownBox(self, xCoord, yCoord):
+        knownBoxWidth = 36;  #22  #38   #25 #50(old yt top hud)  #40,23 (new yt top hud)  #20,20 ult #38,23
+        knownBoxHeight = 24; #22  #28   #25 #23
+        if self.imagefilename == '':
+            return
+        self.STATE['x'], self.STATE['y'] = xCoord, yCoord
+        self.STATE['prevX'], self.STATE['prevY'] = xCoord, yCoord        
+        x1 = xCoord;
+        y1 = yCoord;
+        x2 = xCoord + knownBoxWidth;
+        y2 = yCoord +knownBoxHeight;        
+        #Show bbox
+        if self.bboxId:
+            self.mainPanel.delete(self.bboxId)            
+        #color set
+        self.blueColor = 15
+        currColor = '#%02x%02x%02x' % (self.redColor, self.greenColor, self.blueColor)
+        self.redColor = 255    
+        self.greenColor = 200+(self.greenColor + 5) % 55           
+        self.bboxId = self.mainPanel.create_rectangle(x1, y1, x2, y2, \
+                                                        width = 2, \
+                                                        outline = currColor)         
+        #Got a new BB, store the class label also
+        self.bboxList.append((x1, y1, x2, y2))
+        self.bboxIdList.append(self.bboxId)
+        self.classLabelList.append(self.currClassLabel)
+              
+        self.bboxId = None
+        self.listbox.insert(END, '(%d, %d) -> (%d, %d)[Class %d]' %(x1, y1, x2, y2 , self.currClassLabel))
+        #color set      
+        self.listbox.itemconfig(len(self.bboxIdList) - 1, fg = currColor)
+
+        
+        
     def mouseMove(self, event):
         if self.imagefilename == '':
             return
@@ -532,7 +518,7 @@ class Euclid():
                 self.mainPanel.delete(self.bboxId)
             #color set
             currColor = '#%02x%02x%02x' % (self.redColor, self.greenColor, self.blueColor)
-            self.blueColor = (self.blueColor + 35) % 255                
+            self.blueColor = 10 + (self.blueColor + 1) % 230                
             self.bboxId = self.mainPanel.create_rectangle(self.STATE['x'], self.STATE['y'], \
                                                             event.x, event.y, \
                                                             width = 2, \
@@ -572,6 +558,8 @@ class Euclid():
         self.classLabelList = []
 
     def prevImage(self, event = None):
+        self.STATE['prevX'] = 0
+        self.STATE['prevY'] = 0
         self.saveLabel()    
         if self.cur > 1:
             self.cur -= 1
@@ -579,8 +567,13 @@ class Euclid():
         else:
             self.updateStatus("No more previous files!")
             tkMessageBox.showwarning("Labelling complete", message = "No previous file to label!")
-
+    def cancelKnownBoxFunc(self, event = None):
+        self.STATE['prevX'] = 0;
+        self.STATE['prevY'] = 0;
+            
     def nextImage(self, event = None):
+        if((self.STATE['prevX']+self.STATE['prevY']) > 0):
+            self.handleMouseOrXKey(self.STATE['prevX'], self.STATE['prevY'])
         self.saveLabel()
         if self.cur < self.total:
             self.cur += 1
