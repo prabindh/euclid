@@ -101,6 +101,10 @@ After labelling the images, the labels can be read and converted to TFRecord usi
 # Who uses
 
 https://github.com/dpogosov/yolo_kfm
+
 https://github.com/suji104
+
 https://github.com/VanitarNordic
+
+https://github.com/lesterlo (DetectNet with Nvidia)
 among others
