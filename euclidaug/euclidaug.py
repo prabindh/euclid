@@ -55,7 +55,14 @@ def write2Yolo(imageSize, boxCoords, writeObj, classLabel):
     writeObj.write('%s' % classLabel)               
     writeObj.write(' %.7f %.7f %.7f %.7f' % (cx, cy, bw, bh))
     writeObj.write('\n')
-     
+
+def write2Kitti(imageSize, boxCoords, writeObj, classLabel): # writing type/class and bbox coordinates and ignoring others           
+    writeObj.write('%s' % classLabel)      
+    writeObj.write(' 0.0 0 0.0 ')           
+    writeObj.write('%.2f %.2f %.2f %.2f' % (boxCoords[0], boxCoords[1], boxCoords[2], boxCoords[3]))
+    writeObj.write(' 0.0 0.0 0.0 0.0 0.0 0.0 0.0')
+    writeObj.write('\n')     
+
 def printHelp():
     return "Usage: name <input objects dir fullpath> <input backgrounds dir fullpath> <output training file fullpath>"
     
@@ -152,6 +159,8 @@ def generateOne(iterationId, imageArrayAllClasses, baseImgName, baseImgObj):
         finalImage.paste(blended, area2)
         # Generate yolo notation
         write2Yolo([cfgWidth, cfgHeight], area1,writeObj, rid)
+        # Generate kitti notation
+        # write2Kitti([cfgWidth, cfgHeight], area1,writeObj, rid)
 
     return finalImage, writeObj
 
