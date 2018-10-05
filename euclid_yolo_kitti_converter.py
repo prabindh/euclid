@@ -58,8 +58,8 @@ if sys.version_info[0] < 3:
     import tkFileDialog
 else:
     from tkinter import *
-    import messagebox as tkMessageBox
-    import filedialog as tkFileDialog
+    import tkinter.messagebox as tkMessageBox
+    import tkinter.filedialog as tkFileDialog
 from PIL import Image, ImageTk
 import os
 import glob
@@ -71,6 +71,8 @@ USAGE = " \
 1. Select a Directory of labels, or Enter the path directly and click Load\n \
 2. Click Convert. The labels will be converted and stored in current directory \n \
 "
+
+
 
 
 # Object Classes (No spaces in name)
@@ -221,16 +223,18 @@ class EuclidConverter():
         #TODO - get image w/h
         yoloOut = self.convert2Yolo([1000,1000], 
                                 [topLeftX, topLeftY, bottomRightX, bottomRightY] );
-        labelFile.write('%s' %classname)               
+        labelFile.write('%s' % CLASSES[classname])               
         labelFile.write(' %.7f %.7f %.7f %.7f\n' % (yoloOut[0], yoloOut[1], yoloOut[2], yoloOut[3]))                                  
         labelFile.close()
+        
     def KittiLabelWriteOut(self, filename, classname, topLeftX, topLeftY, bottomRightX, bottomRightY):
-        labelFile = open(filename, "a+")
+        labelFile = open(filename+ "Kitti.txt", "a+")
         #TODO - get image w/h
-        labelFile.write('%s' %classname)               
+        #print(classname,playerNameArray[0])
+        labelFile.write('%s' % CLASSES[classname])               
         labelFile.write(' 0.0 0 0.0 ')
         labelFile.write('%.2f %.2f %.2f %.2f' % (topLeftX, topLeftY, bottomRightX, bottomRightY))                 
-        labelFile.write(' 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 ')
+        labelFile.write(' 0.0 0.0 0.0 0.0 0.0 0.0 0.0')
         labelFile.write('\n')    
         labelFile.close()
         
@@ -244,8 +248,8 @@ class EuclidConverter():
         # load labels
         for files in labelFileTypes:
             self.labelFileList.extend(glob.glob(os.path.join(self.imageDir, files.lower())) )
-        #    if (False == self.is_windows):
-        #        self.labelFileList.extend(glob.glob(os.path.join(self.imageDir, files)) )
+            if (False == self.is_windows):
+               self.labelFileList.extend(glob.glob(os.path.join(self.imageDir, files)) )
             
         if len(self.labelFileList) == 0:
             tkMessageBox.showerror("Label files not found", message = "No labels (.txt) found in folder!")
@@ -266,28 +270,32 @@ class EuclidConverter():
         self.updateStatus( '%d label files located from %s' %(self.total, self.imageDir))
 
         # Convert one file
-        self.labelfilename = self.labelFileList[self.cur - 1]
-        lastPartFileName, lastPartFileExtension = os.path.splitext(os.path.split(self.labelfilename)[-1])
-        newFileName = self.outDir + '/' + lastPartFileName + lastPartFileExtension
-        bbox_cnt = 0
-        if os.path.exists(self.labelfilename):
-            with open(self.labelfilename) as f:
-                for (i, line) in enumerate(f):
-                    bbox_cnt = len(line)
-                    tmp = [elements.strip() for elements in line.split()]
-                    
-                    # for each line, convert and writeout
-                    
-                    if(len(tmp) > 5):
-                        self.currLabelMode='KITTI'
-                        self.YoloLabelWriteOut(newFileName, CLASSES.index(tmp[0]), float(tmp[4]), float(tmp[5]), float(tmp[6]), float(tmp[7]) )
+        #self.labelfilename = self.labelFileList[self.cur - 1]
+        for file in range(self.total-1):
+            self.labelfilename = self.labelFileList[file]    
+            #print(self.labelfilename, file)
+            lastPartFileName, lastPartFileExtension = os.path.splitext(os.path.split(self.labelfilename)[-1])
+            newFileName = self.outDir + '/' + lastPartFileName + lastPartFileExtension
+            bbox_cnt = 0
+            if os.path.exists(self.labelfilename):
+                with open(self.labelfilename) as f:
+                    for (i, line) in enumerate(f):
+                        bbox_cnt = len(line)
+                        tmp = [elements.strip() for elements in line.split()]
                         
-                    elif(len(tmp) == 5):
-                        self.currLabelMode='YOLO'
-                        bbTuple = self.GetBoundariesFromYoloFile(float(tmp[1]),float(tmp[2]), float(tmp[3]),float(tmp[4]), 
-                                                            self.tkimg.width(), self.tkimg.height() )
-                        KittiLabelWriteOut(self.labelfilename, tmp[0], float(tmp[4]), float(tmp[5]), float(tmp[6]), float(tmp[7]) )
-                                           
+                        # for each line, convert and writeout
+                        
+                        if(len(tmp) > 5):
+                            self.currLabelMode='KITTI'
+                            self.YoloLabelWriteOut(newFileName, int(tmp[0]), float(tmp[4]), float(tmp[5]), float(tmp[6]), float(tmp[7]) )
+                            
+                        elif(len(tmp) == 5):
+                            self.currLabelMode='YOLO'
+                            bbTuple = self.GetBoundariesFromYoloFile(float(tmp[1]),float(tmp[2]), float(tmp[3]),float(tmp[4]), 
+                                                                self.tkimg.width(), self.tkimg.height() )
+                            
+                            self.KittiLabelWriteOut(self.labelfilename, int(tmp[0]), bbTuple[0], bbTuple[1], bbTuple[2], bbTuple[3] )
+                                                   
         
 if __name__ == '__main__':
     root = Tk()
