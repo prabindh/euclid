@@ -44,7 +44,7 @@ Prebuilt binaries for Yolo are provided at https://github.com/prabindh/yolo-bins
 
 Lack of training images reduces training accuracy, when manual annotation is not an option. euclidaug serves to improve availability of training images, specially 2D.
 
-Euclidaug can generate 1000s of annotated/labelled training images in minutes.
+Euclidaug can generate 1000s of precisely annotated/labelled training images in minutes, without manual work.
 
 ## Installing euclidaug
 
@@ -79,7 +79,7 @@ Info: Completed @ 0.265625 (sec)
  How to run adding new classes:
  - Place all object png images in a directory organised by IDs (for 3 classes, folders should be named as 0,1,2)
  - Place all background png images in a folder (can be any name)
- - Update cfgWidth, cfgHeight, numClasses - in the script, to match the framework requirements
+ - Update cfgWidth, cfgHeight, numClasses, and Alpha/scale configurations - in the script, to match the framework requirements
  - Invoke this script as "python <script> <object-folder-name> <bg folder name> <training filename>"
  - output image files will be written to 'output-images' and 'output-labels' and training list file will be written
  
