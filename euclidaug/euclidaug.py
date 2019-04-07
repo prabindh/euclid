@@ -254,8 +254,9 @@ if __name__ == "__main__":
             genImage, genText, bad = generateOne(runId, objectImageArrayAllClasses, baseImageFileNames[bgId], baseImageArray[bgId])
             if bad is True: continue
             #genImage.show()
-            genImageName = imageDir + '\\' + bgFileName+ "_" + str(bgId)+ "_" + str(runId) + ".png"
-            genImage.save(genImageName, "png")            
+            genImageName = imageDir + '\\' + bgFileName+ "_" + str(bgId)+ "_" + str(runId) + ".jpg"
+            genImage = genImage.convert("RGB")
+            genImage.save(genImageName, "jpeg")
             with open(labelDir + "\\" + bgFileName+ "_" + str(bgId) + "_" + str(runId) + ".txt", 'w') as f:
                 f.write(genText.getvalue())
             trainListObj.write('%s\n' % genImageName)
