@@ -30,7 +30,10 @@ import time
 cfgWidth = 416
 cfgHeight = 416
 numClasses = 3
-numTargetImagesPerClass = 10
+minAlpha = 1.0
+enableScaleDown = True
+enableScaleUp = False
+numTargetImagesPerClass = 1000
 imageFolderName = 'out_images'
 labelFolderName = 'out_labels'
 ##############################################################
@@ -95,6 +98,7 @@ def get_object_file_list(imageDir):
 def get_file_list(imageDir):
     imageList = []
     imageList.extend(glob.glob(os.path.join(imageDir, '*.png')) )
+    imageList.extend(glob.glob(os.path.join(imageDir, '*.jpg')) )
     return imageList
                 
 def generateOne(iterationId, imageArrayAllClasses, baseImgName, baseImgObj):
@@ -110,7 +114,13 @@ def generateOne(iterationId, imageArrayAllClasses, baseImgName, baseImgObj):
     format = 'RGBA'
     #create a list of PIL Image objects
     scaledImageArray = []
-    scales = [1.1, 1.3, 1.5, 1.7, 1.8]
+    scales = [1.0]
+    if enableScaleDown is True:
+        for zm in [0.5, 0.6, 0.8, 0.9]:
+            scales.append(zm)
+    if enableScaleUp is True:
+        for zm in [1.1, 1.3, 1.5, 1.7, 1.8]:
+            scales.append(zm)
        
     # imageArrayAllClasses[numClasses][imagesPerClass] - for all classes, Choose a random image in each class
     for classId in range(0, numClasses):
@@ -123,7 +133,7 @@ def generateOne(iterationId, imageArrayAllClasses, baseImgName, baseImgObj):
         scaleW = 1
         scaleH = 1
         if(True == doRandomScale):
-            scaleW = scaleH = scales[random.randrange(0, 5)]           
+            scaleW = scaleH = scales[random.randrange(0, len(scales)-1)]           
         
         img = img.resize((int(img.size[0]*scaleW),int(img.size[1]*scaleH)), Image.BICUBIC)
         scaledImageArray.append(img)        
@@ -136,24 +146,41 @@ def generateOne(iterationId, imageArrayAllClasses, baseImgName, baseImgObj):
 
     # Start packing
     packer.pack()
-    # Open the target background image
-    finalImage = Image.open(baseImgName).convert(format)
+    # Open the target background image as copy
+    finalImage = baseImgObj.copy()
+    
     all_rects = packer.rect_list()
+    bad = False
     for rect in all_rects:
+        # rectpack coordinate is 0,0 at bot left
+        # b - Bin index
+        # x - Rectangle bottom-left corner x coordinate
+        # y - Rectangle bottom-left corner y coordinate
+        # w - Rectangle width
+        # h - Rectangle height
+        # rid - User asigned rectangle id or None
         b, x, y, w, h, rid = rect
-        # left, top, right, bottom       
+        # leftx, lefty, rightx, righty
         area1 = [
             x+objectBoundary[0],
             y+objectBoundary[1],
-            x+objectBoundary[0]+scaledImageArray[rid].size[0], 
+            x+objectBoundary[0]+scaledImageArray[rid].size[0],
             y+objectBoundary[1]+scaledImageArray[rid].size[1]]
+        # Dont write image if exceeding base image - TODO - rectpack debug
+        if area1[2] > cfgWidth or area1[3] > cfgHeight:
+            bad = True
+            break
         area2 = (area1[0], area1[1], area1[2], area1[3])
         # crop original for blend
+        # PIL crop requires {topleft.x,topleft.y, botright.x,botright.y} - 0,0 is in top-left corner
         cropped = finalImage.crop(area2)
         alphas = [0.7, 0.73, 0.75, 0.78, 0.8]
         alpha = 0.8
         if(True == doRandomAlpha):
             alpha = alphas[random.randrange(0, 5)]    
+        
+        if (alpha < minAlpha):
+            alpha = minAlpha
         
         blended = Image.blend(cropped, scaledImageArray[rid], alpha)
         finalImage.paste(blended, area2)
@@ -162,7 +189,7 @@ def generateOne(iterationId, imageArrayAllClasses, baseImgName, baseImgObj):
         # Generate kitti notation
         # write2Kitti([cfgWidth, cfgHeight], area1,writeObj, rid)
 
-    return finalImage, writeObj
+    return finalImage, writeObj, bad
 
 ##############################################################
 ##############################################################
@@ -212,6 +239,7 @@ if __name__ == "__main__":
         sys.exit(printHelp())      
     for name in baseImageFileNames:
         img = Image.open(name).convert(format)
+        img = img.resize((cfgWidth, cfgHeight), Image.BICUBIC)
         baseImageArray.append(img)        
     print("Info: Added [" + str(len(baseImageFileNames)) + "] base images")    
     
@@ -223,7 +251,8 @@ if __name__ == "__main__":
         bgFileNameFull = ntpath.basename(baseImageFileNames[bgId])   
         bgFileName, bgFileNameExt = os.path.splitext(bgFileNameFull)
         for runId in range(0, adjnumTargetImagesPerClass):
-            genImage, genText = generateOne(runId, objectImageArrayAllClasses, baseImageFileNames[bgId], baseImageArray[bgId])
+            genImage, genText, bad = generateOne(runId, objectImageArrayAllClasses, baseImageFileNames[bgId], baseImageArray[bgId])
+            if bad is True: continue
             #genImage.show()
             genImageName = imageDir + '\\' + bgFileName+ "_" + str(bgId)+ "_" + str(runId) + ".png"
             genImage.save(genImageName, "png")            
