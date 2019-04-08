@@ -46,6 +46,8 @@ Lack of training images reduces training accuracy, when manual annotation is not
 
 Euclidaug can generate 1000s of precisely annotated/labelled training images in minutes, without manual work.
 
+For an example of auto-annotation of industrial capacitors to detect in a PCB using euclidaug, refer to https://github.com/prabindh/yolo-bins/tree/master/capacito
+
 ## Installing euclidaug
 
 cd euclidaug
