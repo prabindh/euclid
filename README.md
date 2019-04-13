@@ -3,6 +3,7 @@ Euclid object labeller for object detection training purposes based on Python. T
 
 - Supports Kitti format
 - Supports Yolo darknet format (Generates bounding boxes, as well as training list file)
+- Autolabelling (euclidaug)
 
 Dynamic selection of format is now supported.
 
@@ -45,6 +46,8 @@ Prebuilt binaries for Yolo are provided at https://github.com/prabindh/yolo-bins
 Lack of training images reduces training accuracy, when manual annotation is not an option. euclidaug serves to improve availability of training images, specially 2D.
 
 Euclidaug can generate 1000s of precisely annotated/labelled training images in minutes, without manual work.
+
+# Example application of Euclidaug (auto-annotation)
 
 For an example of auto-annotation of industrial capacitors to detect in a PCB using euclidaug, refer to https://github.com/prabindh/yolo-bins/tree/master/capacito
 
