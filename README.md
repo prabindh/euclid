@@ -103,6 +103,9 @@ Info: Completed @ 0.265625 (sec)
 # Converting to TensorFlow format
 After labelling the images, the labels can be read and converted to TFRecord using Python scripts available in Tensorflow, using tf.train.Example and tf.train.Features. Note: Yolo and TF share the same bounding box notations (normalised).
 
+# Writing to KITTI Format
+Use the function "write2Kitti" instead of "write2Yolo"
+
 # Who uses euclidaug (Thank you!)
 
 https://hackaday.io/project/161581-ai-equiped-wasp-and-asian-hornet-sentry-gun/log/155557-processing-the-images
