@@ -1,4 +1,4 @@
-# euclid labeller, and euclidaug augment engine
+# euclid labeller, and euclidaug augment engine for friction-less Deep Learning
 Euclid object labeller for object detection training purposes based on Python. Tested on Linux, Windows, and Mac.
 
 - Supports Kitti format
@@ -39,7 +39,9 @@ https://github.com/prabindh/darknet
 
 Prebuilt binaries for Yolo are provided at https://github.com/prabindh/yolo-bins
 
-# Euclidaug image augmentation engine
+# Euclidaug image augmentation engine (frictionless Deep Learning)
+
+Euclidaug automates the annotation task, so that developers can focus on gathering insights and improving accuracy, than spending time on manual labelling.
 
 ![alt text](euclidaug/sample_output.png)
 
