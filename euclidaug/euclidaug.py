@@ -36,6 +36,7 @@ enableScaleUp = False
 numTargetImagesPerClass = 1000
 imageFolderName = 'out_images'
 labelFolderName = 'out_labels'
+writeOutFormat = "kitti"
 ##############################################################
 ##################### EUCLIDAUG ##############################
 ##############################################################
@@ -184,10 +185,10 @@ def generateOne(iterationId, imageArrayAllClasses, baseImgName, baseImgObj):
         
         blended = Image.blend(cropped, scaledImageArray[rid], alpha)
         finalImage.paste(blended, area2)
-        # Generate yolo notation
-        write2Yolo([cfgWidth, cfgHeight], area1,writeObj, rid)
-        # Generate kitti notation
-        # write2Kitti([cfgWidth, cfgHeight], area1,writeObj, rid)
+        if writeOutFormat == "yolo":
+            write2Yolo([cfgWidth, cfgHeight], area1,writeObj, rid)
+        else:
+            write2Kitti([cfgWidth, cfgHeight], area1,writeObj, rid)
 
     return finalImage, writeObj, bad
 
@@ -246,7 +247,7 @@ if __name__ == "__main__":
     # Loop across background images, then runs
     adjnumTargetImagesPerClass = int ((numTargetImagesPerClass /len(baseImageFileNames) ) + 1) 
     timeStart = time.process_time()
-    print("Info: Beginning [" + str(adjnumTargetImagesPerClass*len(baseImageFileNames)) + "] images @ " + str(timeStart) + " (sec)" )
+    print("Info: Beginning [" + str(adjnumTargetImagesPerClass*len(baseImageFileNames)) + "] images @ " + str(timeStart) + " (s) in ["+writeOutFormat+"] format" )    
     for bgId in range(0, len(baseImageFileNames)):
         bgFileNameFull = ntpath.basename(baseImageFileNames[bgId])   
         bgFileName, bgFileNameExt = os.path.splitext(bgFileNameFull)
@@ -264,5 +265,5 @@ if __name__ == "__main__":
     with open(trainFileName, "w") as f:
         f.write(trainListObj.getvalue())
     timeEnd = time.process_time() - timeStart
-    print("")    
-    print("Info: Completed @ " + str(timeEnd - timeStart) + " (sec)" )
+    print("")
+    print("Info: Completed @ " + str(timeEnd - timeStart) + " (s), in ["+writeOutFormat+"] format" )
