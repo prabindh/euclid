@@ -67,7 +67,7 @@ Random scaling, random packing, and random blending - are the operations perform
 
 ## Purpose of euclidaug:
 
- To significantly augment availability of annotated data (# of images), specially 2D shapes for object recognition. Targeted for  Yolo
+ To significantly augment availability of annotated data (# of images), specially 2D shapes for object recognition. Targeted for Yolo, SqueezeDet, Tensorflow (and others that support KITTI and Yolo formats)
 
 ## How to run for example animal images (part of the tree):
 
@@ -121,4 +121,5 @@ https://github.com/suji104
 https://github.com/VanitarNordic
 
 https://github.com/lesterlo (DetectNet with Nvidia)
+
 among others
