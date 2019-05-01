@@ -9,6 +9,8 @@ Dynamic selection of format is now supported.
 
 Optimised box selection using keyboard shortcuts.
 
+Example output from the IEEE paper "On the Applicability of Deep Learning for Road Signal Recognition", by Vinicios R. Soares, Mathias R. Luz, Afonso H. Ribeiro, Rafael S. Rbeiro, Marcella S. R. Martins, Max M. D. Santos, and Joaquim de Mira  https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=8627071
+
 ![alt text](euclidscreen.png)
 
 # Typical object labelling workflow using Euclid:
