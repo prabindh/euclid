@@ -3,6 +3,7 @@ Euclid object labeller for object detection training purposes based on Python. T
 
 - Supports Kitti format
 - Supports Yolo annotation format used in labelling, in the darknet framework (Generates bounding boxes, as well as training list file)
+- Supports PascalVOC format (XML tree)
 - Autolabelling (euclidaug is the augmentation tool, refer section below)
 
 Dynamic selection of format is now supported.
