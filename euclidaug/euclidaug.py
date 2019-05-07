@@ -33,10 +33,10 @@ numClasses = 3
 minAlpha = 1.0
 enableScaleDown = True
 enableScaleUp = False
-numTargetImagesPerClass = 1000
+numTargetImagesPerClass = 10
 imageFolderName = 'out_images'
 labelFolderName = 'out_labels'
-writeOutFormat = "kitti"
+writeOutFormat = "kitti"   # pascalvoc or yolo or kitti
 ##############################################################
 ##################### EUCLIDAUG ##############################
 ##############################################################
@@ -65,7 +65,18 @@ def write2Kitti(imageSize, boxCoords, writeObj, classLabel): # writing type/clas
     writeObj.write(' 0.0 0 0.0 ')           
     writeObj.write('%.2f %.2f %.2f %.2f' % (boxCoords[0], boxCoords[1], boxCoords[2], boxCoords[3]))
     writeObj.write(' 0.0 0.0 0.0 0.0 0.0 0.0 0.0')
-    writeObj.write('\n')     
+    writeObj.write('\n')
+
+def writeHeader2VOC(imagename, w, h, d, writeObj):
+    writeObj.write('<filename>"'+imagename+'"</filename><size><width>'+str(w)+'</width><height>'+str(h)+'</height><depth>'+str(d)+'</depth></size>')
+    writeObj.write('\n')
+
+def writeObject2VOC(objName, xmin, ymin, xmax, ymax, writeObj):
+    writeObj.write('<object><name>'+objName+'</name><bndbox><xmin>'+str(xmin)+'</xmin><ymin>'+str(ymin)+'</ymin><xmax>'+str(xmax)+'</xmax><ymax>'+str(ymax)+'</ymax></bndbox></object>')
+    writeObj.write('\n')
+
+def Finalise2VOC(annotation, writeObj):
+    writeObj.write('<?xml version="1.0" ?><annotation>'+annotation+'</annotation>')
 
 def printHelp():
     return "Usage: name <input objects dir fullpath> <input backgrounds dir fullpath> <output training file fullpath>"
@@ -187,8 +198,10 @@ def generateOne(iterationId, imageArrayAllClasses, baseImgName, baseImgObj):
         finalImage.paste(blended, area2)
         if writeOutFormat == "yolo":
             write2Yolo([cfgWidth, cfgHeight], area1,writeObj, rid)
-        else:
+        elif writeOutFormat == "kitti":
             write2Kitti([cfgWidth, cfgHeight], area1,writeObj, rid)
+        elif writeOutFormat == "pascalvoc":
+            writeObject2VOC(str(rid), area1[0], area1[1], area1[2], area1[3], writeObj)
 
     return finalImage, writeObj, bad
 
@@ -258,8 +271,15 @@ if __name__ == "__main__":
             genImageName = imageDir + '\\' + bgFileName+ "_" + str(bgId)+ "_" + str(runId) + ".jpg"
             genImage = genImage.convert("RGB")
             genImage.save(genImageName, "jpeg")
-            with open(labelDir + "\\" + bgFileName+ "_" + str(bgId) + "_" + str(runId) + ".txt", 'w') as f:
-                f.write(genText.getvalue())
+            if writeOutFormat == "pascalvoc":
+                with open(labelDir + "\\" + bgFileName+ "_" + str(bgId) + "_" + str(runId) + ".xml", 'w') as f:
+                    writeHeader2VOC(genImageName, genImage.size[0], genImage.size[1], 3, genText)
+                    writeOutIO =io.StringIO()
+                    Finalise2VOC(genText.getvalue(), writeOutIO)
+                    f.write(writeOutIO.getvalue())               
+            else:
+                with open(labelDir + "\\" + bgFileName+ "_" + str(bgId) + "_" + str(runId) + ".txt", 'w') as f:
+                    f.write(genText.getvalue())
             trainListObj.write('%s\n' % genImageName)
             print('.', end='', flush=True)
     with open(trainFileName, "w") as f:
