@@ -36,7 +36,7 @@ enableScaleUp = False
 numTargetImagesPerClass = 10
 imageFolderName = 'out_images'
 labelFolderName = 'out_labels'
-writeOutFormat = "kitti"   # pascalvoc or yolo or kitti
+writeOutFormat = "pascalvoc"   # pascalvoc or yolo or kitti
 ##############################################################
 ##################### EUCLIDAUG ##############################
 ##############################################################
@@ -72,7 +72,7 @@ def writeHeader2VOC(imagename, w, h, d, writeObj):
     writeObj.write('\n')
 
 def writeObject2VOC(objName, xmin, ymin, xmax, ymax, writeObj):
-    writeObj.write('<object><name>'+objName+'</name><bndbox><xmin>'+str(xmin)+'</xmin><ymin>'+str(ymin)+'</ymin><xmax>'+str(xmax)+'</xmax><ymax>'+str(ymax)+'</ymax></bndbox></object>')
+    writeObj.write('<object><difficult>0</difficult><name>'+objName+'</name><bndbox><xmin>'+str(xmin)+'</xmin><ymin>'+str(ymin)+'</ymin><xmax>'+str(xmax)+'</xmax><ymax>'+str(ymax)+'</ymax></bndbox></object>')
     writeObj.write('\n')
 
 def Finalise2VOC(annotation, writeObj):
