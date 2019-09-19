@@ -44,7 +44,7 @@ Prebuilt binaries for Yolo are provided at https://github.com/prabindh/yolo-bins
 
 # Euclidaug image augmentation engine (frictionless Deep Learning)
 
-Euclidaug automates the annotation task, so that developers can focus on gathering insights and improving accuracy, than spending time on manual labelling.
+Euclidaug automates the annotation task, so that developers can focus on gathering insights and improving accuracy, than spending time on manual labelling. Combined with AI generated artifical images (like https://generated.photos/), training becomes easy.
 
 ![alt text](euclidaug/sample_output.png)
 
